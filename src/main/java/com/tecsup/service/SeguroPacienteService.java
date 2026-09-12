@@ -33,7 +33,9 @@ public class SeguroPacienteService {
         return repository.save(e);
     }
 
-    public void eliminar(Integer id) { repository.deleteById(id); }
+    public void eliminar(Integer id) {
+        repository.deleteById(id);
+    }
 
     public Optional<SeguroPaciente> obtenerPorId(Integer id) {
         return repository.findById(id);

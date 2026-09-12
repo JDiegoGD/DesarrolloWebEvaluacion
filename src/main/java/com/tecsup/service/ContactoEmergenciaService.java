@@ -28,11 +28,13 @@ public class ContactoEmergenciaService {
         e.setTelefono(datos.getTelefono());
         e.setDireccion(datos.getDireccion());
         e.setCorreoElectronico(datos.getCorreoElectronico());
-        e.setEsPrincipal(datos.getEsPrincipal());
+        e.setEsPrincipal(datos.isEsPrincipal());
         return repository.save(e);
     }
 
-    public void eliminar(Integer id) { repository.deleteById(id); }
+    public void eliminar(Integer id) {
+        repository.deleteById(id);
+    }
 
     public Optional<ContactoEmergencia> obtenerPorId(Integer id) {
         return repository.findById(id);

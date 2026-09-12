@@ -7,5 +7,8 @@ import java.util.List;
 
 @Repository
 public interface AtencionRepository extends JpaRepository<Atencion, Integer> {
+
     List<Atencion> findByPacienteIdPacienteOrderByFechaAtencionDesc(Integer idPaciente);
+
+    long countByPacienteIdPaciente(Integer idPaciente);
 }

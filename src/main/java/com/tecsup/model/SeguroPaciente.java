@@ -1,10 +1,8 @@
 package com.tecsup.model;
 
 import jakarta.persistence.*;
-import lombok.Data;
 import java.time.LocalDate;
 
-@Data
 @Entity
 @Table(name = "seguro_paciente")
 public class SeguroPaciente {
@@ -24,4 +22,31 @@ public class SeguroPaciente {
     private LocalDate fechaInicio;
     private LocalDate fechaVencimiento;
     @Column(length = 20)  private String estadoCobertura;
+
+    public Integer getIdSeguroPaciente() { return idSeguroPaciente; }
+    public void setIdSeguroPaciente(Integer id) { this.idSeguroPaciente = id; }
+
+    public Paciente getPaciente() { return paciente; }
+    public void setPaciente(Paciente paciente) { this.paciente = paciente; }
+
+    public String getTipoSeguro() { return tipoSeguro; }
+    public void setTipoSeguro(String tipoSeguro) { this.tipoSeguro = tipoSeguro; }
+
+    public String getEmpresaAseguradora() { return empresaAseguradora; }
+    public void setEmpresaAseguradora(String empresaAseguradora) { this.empresaAseguradora = empresaAseguradora; }
+
+    public String getNumeroPoliza() { return numeroPoliza; }
+    public void setNumeroPoliza(String numeroPoliza) { this.numeroPoliza = numeroPoliza; }
+
+    public String getNumeroAfiliacion() { return numeroAfiliacion; }
+    public void setNumeroAfiliacion(String numeroAfiliacion) { this.numeroAfiliacion = numeroAfiliacion; }
+
+    public LocalDate getFechaInicio() { return fechaInicio; }
+    public void setFechaInicio(LocalDate fechaInicio) { this.fechaInicio = fechaInicio; }
+
+    public LocalDate getFechaVencimiento() { return fechaVencimiento; }
+    public void setFechaVencimiento(LocalDate fechaVencimiento) { this.fechaVencimiento = fechaVencimiento; }
+
+    public String getEstadoCobertura() { return estadoCobertura; }
+    public void setEstadoCobertura(String estadoCobertura) { this.estadoCobertura = estadoCobertura; }
 }

@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Seguros</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: Arial, sans-serif; background: #f0f2f5; }
+        .navbar { background: #1a73e8; padding: 14px 30px; display: flex; align-items: center; gap: 20px; }
+        .navbar h1 { color: white; font-size: 20px; flex: 1; }
+        .navbar a { color: white; text-decoration: none; padding: 8px 16px; border-radius: 6px; font-size: 14px; }
+        .navbar a:hover { background: rgba(255,255,255,0.2); }
+        .container { margin: 24px; }
+        .card { background: white; border-radius: 12px; padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        h2 { color: #1a73e8; margin-bottom: 16px; font-size: 20px; }
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .form-group { display: flex; flex-direction: column; gap: 4px; }
+        .form-group label { font-size: 13px; color: #555; font-weight: bold; }
+        .form-group input, .form-group select { padding: 8px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; }
+        .btn { padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: bold; }
+        .btn-primary { background: #1a73e8; color: white; }
+        .btn-search { background: #34a853; color: white; }
+        .search-row { display: flex; gap: 10px; }
+        .search-row input { flex: 1; padding: 8px 12px; border: 1px solid #ddd; border-radius: 6px; }
+        table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        th { background: #1a73e8; color: white; padding: 10px; text-align: left; }
+        td { padding: 10px; border-bottom: 1px solid #eee; }
+        tr:hover { background: #f8f9ff; }
+        .badge { padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: bold; }
+        .badge-vigente { background: #e6f4ea; color: #2d8f47; }
+        .badge-vencido { background: #fce8e6; color: #c5221f; }
+        #msg { padding: 10px; border-radius: 6px; margin-bottom: 12px; display: none; }
+        .msg-ok { background: #e6f4ea; color: #2d8f47; }
+        .msg-err { background: #fce8e6; color: #c5221f; }
+    </style>
+</head>
+<body>
+<nav class="navbar">
+    <h1>Sistema Hospitalario</h1>
+    <a href="/">Inicio</a>
+    <a href="/pacientes">Pacientes</a>
+    <a href="/atenciones">Atenciones</a>
+    <a href="/seguros">Seguros</a>
+    <a href="/contactos">Contactos</a>
+    <a href="/usuarios">Usuarios</a>
+    <a href="/bitacora">Bitácora</a>
+</nav>
+<div class="container">
+
+    <div class="card">
+        <h2>Registrar Seguro</h2>
+        <div id="msg"></div>
+        <div class="form-grid">
+            <div class="form-group">
+                <label>ID Paciente</label>
+                <input type="number" id="idPaciente" placeholder="1">
+            </div>
+            <div class="form-group">
+                <label>Tipo Seguro</label>
+                <select id="tipoSeguro">
+                    <option>SIS</option>
+                    <option>EPS</option>
+                    <option>Particular</option>
+                    <option>SOAT</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Empresa Aseguradora</label>
+                <input type="text" id="empresa" placeholder="Rimac, Pacifico...">
+            </div>
+            <div class="form-group">
+                <label>Número Póliza</label>
+                <input type="text" id="poliza" placeholder="POL-001">
+            </div>
+            <div class="form-group">
+                <label>Número Afiliación</label>
+                <input type="text" id="afiliacion" placeholder="AF-001">
+            </div>
+            <div class="form-group">
+                <label>Estado Cobertura</label>
+                <select id="estadoCobertura">
+                    <option>Vigente</option>
+                    <option>Vencido</option>
+                    <option>Suspendido</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Fecha Inicio</label>
+                <input type="date" id="fechaInicio">
+            </div>
+            <div class="form-group">
+                <label>Fecha Vencimiento</label>
+                <input type="date" id="fechaVencimiento">
+            </div>
+        </div>
+        <br>
+        <button class="btn btn-primary" onclick="registrarSeguro()">Registrar Seguro</button>
+    </div>
+
+    <div class="card">
+        <h2>Buscar Seguros por Paciente</h2>
+        <div class="search-row">
+            <input type="number" id="buscarId" placeholder="ID del paciente">
+            <button class="btn btn-search" onclick="buscar()">Buscar</button>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>Lista de Seguros</h2>
+        <table>
+            <thead>
+                <tr><th>ID</th><th>Paciente ID</th><th>Tipo</th><th>Empresa</th><th>Póliza</th><th>Vencimiento</th><th>Estado</th></tr>
+            </thead>
+            <tbody id="bodySeguros">
+                <tr><td colspan="7" style="text-align:center;color:#888">Busca por ID de paciente</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+const API = 'http://localhost:8081';
+
+async function registrarSeguro() {
+    const body = {
+        paciente: { idPaciente: parseInt(document.getElementById('idPaciente').value) },
+        tipoSeguro: document.getElementById('tipoSeguro').value,
+        empresaAseguradora: document.getElementById('empresa').value,
+        numeroPoliza: document.getElementById('poliza').value,
+        numeroAfiliacion: document.getElementById('afiliacion').value,
+        estadoCobertura: document.getElementById('estadoCobertura').value,
+        fechaInicio: document.getElementById('fechaInicio').value,
+        fechaVencimiento: document.getElementById('fechaVencimiento').value
+    };
+    const res = await fetch(`${API}/api/seguros`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+    });
+    const msg = document.getElementById('msg');
+    if (res.ok) {
+        msg.className = 'msg-ok'; msg.style.display = 'block';
+        msg.textContent = 'Seguro registrado correctamente.';
+    } else {
+        msg.className = 'msg-err'; msg.style.display = 'block';
+        msg.textContent = 'Error al registrar seguro.';
+    }
+}
+
+async function buscar() {
+    const id = document.getElementById('buscarId').value;
+    if (!id) return;
+    const res = await fetch(`${API}/api/seguros/paciente/${id}`);
+    const data = await res.json();
+    const tbody = document.getElementById('bodySeguros');
+    if (!data.length) {
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#888">Sin resultados</td></tr>';
+        return;
+    }
+    tbody.innerHTML = data.map(s => `
+        <tr>
+            <td>${s.idSeguroPaciente}</td>
+            <td>${s.paciente?.idPaciente ?? '-'}</td>
+            <td>${s.tipoSeguro}</td>
+            <td>${s.empresaAseguradora}</td>
+            <td>${s.numeroPoliza}</td>
+            <td>${s.fechaVencimiento ?? '-'}</td>
+            <td><span class="badge badge-${s.estadoCobertura?.toLowerCase()}">${s.estadoCobertura}</span></td>
+        </tr>
+    `).join('');
+}
+</script>
+</body>
+</html>

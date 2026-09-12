@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Bitácora</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: Arial, sans-serif; background: #f0f2f5; }
+        .navbar { background: #1a73e8; padding: 14px 30px; display: flex; align-items: center; gap: 20px; }
+        .navbar h1 { color: white; font-size: 20px; flex: 1; }
+        .navbar a { color: white; text-decoration: none; padding: 8px 16px; border-radius: 6px; font-size: 14px; }
+        .navbar a:hover { background: rgba(255,255,255,0.2); }
+        .container { margin: 24px; }
+        .card { background: white; border-radius: 12px; padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        h2 { color: #1a73e8; margin-bottom: 16px; font-size: 20px; }
+        .search-row { display: flex; gap: 10px; }
+        .search-row input { flex: 1; padding: 8px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; }
+        .btn { padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: bold; }
+        .btn-search { background: #1a73e8; color: white; }
+        table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        th { background: #1a73e8; color: white; padding: 10px; text-align: left; }
+        td { padding: 10px; border-bottom: 1px solid #eee; }
+        tr:hover { background: #f8f9ff; }
+        .old { color: #c5221f; text-decoration: line-through; }
+        .new { color: #2d8f47; font-weight: bold; }
+    </style>
+</head>
+<body>
+<nav class="navbar">
+    <h1>Sistema Hospitalario</h1>
+    <a href="/">Inicio</a>
+    <a href="/pacientes">Pacientes</a>
+    <a href="/atenciones">Atenciones</a>
+    <a href="/seguros">Seguros</a>
+    <a href="/contactos">Contactos</a>
+    <a href="/usuarios">Usuarios</a>
+    <a href="/bitacora">Bitácora</a>
+</nav>
+<div class="container">
+
+    <div class="card">
+        <h2>Consultar Bitácora de Modificaciones</h2>
+        <div class="search-row">
+            <input type="number" id="idPaciente" placeholder="ID del paciente">
+            <button class="btn btn-search" onclick="buscar()">Ver Bitácora</button>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>Historial de Cambios</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Fecha y Hora</th>
+                    <th>Usuario</th>
+                    <th>Acción</th>
+                    <th>Campo</th>
+                    <th>Valor Anterior</th>
+                    <th>Valor Nuevo</th>
+                </tr>
+            </thead>
+            <tbody id="bodyBitacora">
+                <tr><td colspan="7" style="text-align:center;color:#888">Ingresa el ID del paciente para ver su historial</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+const API = 'http://localhost:8081';
+
+async function buscar() {
+    const id = document.getElementById('idPaciente').value;
+    if (!id) return;
+    const res = await fetch(`${API}/api/pacientes/${id}/bitacora`);
+    const data = await res.json();
+    const tbody = document.getElementById('bodyBitacora');
+    if (!data.length) {
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#888">Sin registros en bitácora</td></tr>';
+        return;
+    }
+    tbody.innerHTML = data.map(b => `
+        <tr>
+            <td>${b.idBitacora}</td>
+            <td>${b.fechaHora?.replace('T', ' ').substring(0, 19) ?? '-'}</td>
+            <td>${b.usuario?.nombreUsuario ?? '-'} (${b.usuario?.rol ?? '-'})</td>
+            <td>${b.accion}</td>
+            <td><b>${b.campoModificado}</b></td>
+            <td class="old">${b.valorAnterior ?? '-'}</td>
+            <td class="new">${b.valorNuevo ?? '-'}</td>
+        </tr>
+    `).join('');
+}
+</script>
+</body>
+</html>

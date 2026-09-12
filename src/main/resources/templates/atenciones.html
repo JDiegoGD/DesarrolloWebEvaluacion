@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Atenciones</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: Arial, sans-serif; background: #f0f2f5; }
+        .navbar { background: #1a73e8; padding: 14px 30px; display: flex; align-items: center; gap: 20px; }
+        .navbar h1 { color: white; font-size: 20px; flex: 1; }
+        .navbar a { color: white; text-decoration: none; padding: 8px 16px; border-radius: 6px; font-size: 14px; }
+        .navbar a:hover { background: rgba(255,255,255,0.2); }
+        .container { margin: 24px; }
+        .card { background: white; border-radius: 12px; padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        h2 { color: #1a73e8; margin-bottom: 16px; font-size: 20px; }
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .form-group { display: flex; flex-direction: column; gap: 4px; }
+        .form-group label { font-size: 13px; color: #555; font-weight: bold; }
+        .form-group input, .form-group textarea { padding: 8px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; }
+        textarea { resize: vertical; min-height: 80px; }
+        .btn { padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: bold; }
+        .btn-primary { background: #1a73e8; color: white; }
+        .btn-search { background: #34a853; color: white; }
+        .search-row { display: flex; gap: 10px; }
+        .search-row input { flex: 1; padding: 8px 12px; border: 1px solid #ddd; border-radius: 6px; }
+        table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        th { background: #1a73e8; color: white; padding: 10px; text-align: left; }
+        td { padding: 10px; border-bottom: 1px solid #eee; }
+        tr:hover { background: #f8f9ff; }
+        #msg { padding: 10px; border-radius: 6px; margin-bottom: 12px; display: none; }
+        .msg-ok { background: #e6f4ea; color: #2d8f47; }
+        .msg-err { background: #fce8e6; color: #c5221f; }
+    </style>
+</head>
+<body>
+<nav class="navbar">
+    <h1>Sistema Hospitalario</h1>
+    <a href="/">Inicio</a>
+    <a href="/pacientes">Pacientes</a>
+    <a href="/atenciones">Atenciones</a>
+    <a href="/seguros">Seguros</a>
+    <a href="/contactos">Contactos</a>
+    <a href="/usuarios">Usuarios</a>
+    <a href="/bitacora">Bitácora</a>
+</nav>
+<div class="container">
+
+    <div class="card">
+        <h2>Registrar Atención</h2>
+        <div id="msg"></div>
+        <div class="form-grid">
+            <div class="form-group">
+                <label>ID Paciente</label>
+                <input type="number" id="idPaciente" placeholder="1">
+            </div>
+            <div class="form-group">
+                <label>Fecha Atención</label>
+                <input type="date" id="fechaAtencion">
+            </div>
+            <div class="form-group" style="grid-column: span 2">
+                <label>Motivo</label>
+                <textarea id="motivo" placeholder="Descripción del motivo de atención"></textarea>
+            </div>
+        </div>
+        <br>
+        <button class="btn btn-primary" onclick="registrarAtencion()">Registrar Atención</button>
+    </div>
+
+    <div class="card">
+        <h2>Buscar Atenciones por Paciente</h2>
+        <div class="search-row">
+            <input type="number" id="buscarIdPaciente" placeholder="ID del paciente">
+            <button class="btn btn-search" onclick="buscarPorPaciente()">Buscar</button>
+            <button class="btn btn-primary" onclick="listarTodas()">Ver Todas</button>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>Lista de Atenciones</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Paciente</th>
+                    <th>Fecha</th>
+                    <th>Motivo</th>
+                </tr>
+            </thead>
+            <tbody id="bodyAtenciones">
+                <tr><td colspan="4" style="text-align:center;color:#888">Cargando...</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+const API = 'http://localhost:8081';
+
+async function registrarAtencion() {
+    const body = {
+        paciente: { idPaciente: parseInt(document.getElementById('idPaciente').value) },
+        fechaAtencion: document.getElementById('fechaAtencion').value,
+        motivo: document.getElementById('motivo').value
+    };
+    const res = await fetch(`${API}/api/atenciones`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+    });
+    const msg = document.getElementById('msg');
+    if (res.ok) {
+        msg.className = 'msg-ok'; msg.style.display = 'block';
+        msg.textContent = 'Atención registrada correctamente.';
+        listarTodas();
+    } else {
+        msg.className = 'msg-err'; msg.style.display = 'block';
+        msg.textContent = 'Error al registrar atención.';
+    }
+}
+
+async function listarTodas() {
+    const res = await fetch(`${API}/api/atenciones`);
+    const data = await res.json();
+    renderTabla(data);
+}
+
+async function buscarPorPaciente() {
+    const id = document.getElementById('buscarIdPaciente').value;
+    if (!id) return;
+    const res = await fetch(`${API}/api/atenciones/paciente/${id}`);
+    const data = await res.json();
+    renderTabla(data);
+}
+
+function renderTabla(lista) {
+    const tbody = document.getElementById('bodyAtenciones');
+    if (!lista || lista.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#888">Sin resultados</td></tr>';
+        return;
+    }
+    tbody.innerHTML = lista.map(a => `
+        <tr>
+            <td>${a.idAtencion}</td>
+            <td>${a.paciente?.nombres ?? ''} ${a.paciente?.apellidoPaterno ?? ''} (ID: ${a.paciente?.idPaciente ?? '-'})</td>
+            <td>${a.fechaAtencion}</td>
+            <td>${a.motivo ?? '-'}</td>
+        </tr>
+    `).join('');
+}
+
+listarTodas();
+</script>
+</body>
+</html>

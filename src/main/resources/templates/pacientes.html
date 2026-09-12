@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Pacientes</title>
+    <style>
+        *{box-sizing:border-box;margin:0;padding:0}
+        body{font-family:Arial,sans-serif;background:#f0f2f5}
+        .navbar{background:#1a73e8;padding:14px 30px;display:flex;align-items:center;gap:20px}
+        .navbar h1{color:white;font-size:20px;flex:1}
+        .navbar a{color:white;text-decoration:none;padding:8px 16px;border-radius:6px;font-size:14px}
+        .navbar a:hover{background:rgba(255,255,255,0.2)}
+        .container{margin:24px}
+        .card{background:white;border-radius:12px;padding:24px;box-shadow:0 2px 8px rgba(0,0,0,0.1);margin-bottom:20px}
+        h2{color:#1a73e8;margin-bottom:16px;font-size:20px}
+        .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+        .form-group{display:flex;flex-direction:column;gap:4px}
+        .form-group label{font-size:13px;color:#555;font-weight:bold}
+        .form-group input,.form-group select{padding:8px 12px;border:1px solid #ddd;border-radius:6px;font-size:14px;transition:border .2s}
+        .form-group input:focus,.form-group select:focus{outline:none;border-color:#1a73e8}
+        .form-group input.error{border-color:#e53935}
+        .err-msg{font-size:11px;color:#e53935;min-height:14px}
+        .btn{padding:10px 20px;border:none;border-radius:6px;cursor:pointer;font-size:14px;font-weight:bold}
+        .btn-primary{background:#1a73e8;color:white}
+        .btn-primary:hover{background:#1557b0}
+        .btn-search{background:#34a853;color:white}
+        .search-row{display:flex;gap:10px;align-items:flex-end}
+        .search-row input{flex:1;padding:8px 12px;border:1px solid #ddd;border-radius:6px}
+        table{width:100%;border-collapse:collapse;font-size:13px}
+        th{background:#1a73e8;color:white;padding:10px;text-align:left}
+        td{padding:10px;border-bottom:1px solid #eee}
+        tr:hover{background:#f8f9ff}
+        .badge{padding:3px 10px;border-radius:20px;font-size:11px;font-weight:bold}
+        .badge-activo{background:#e6f4ea;color:#2d8f47}
+        .badge-inactivo{background:#fce8e6;color:#c5221f}
+        .badge-fallecido{background:#eeeeee;color:#555}
+        #msg{padding:10px;border-radius:6px;margin-bottom:12px;display:none}
+        .msg-ok{background:#e6f4ea;color:#2d8f47}
+        .msg-err{background:#fce8e6;color:#c5221f}
+        .hint{font-size:11px;color:#888;margin-top:2px}
+    </style>
+</head>
+<body>
+<nav class="navbar">
+    <h1>Sistema Hospitalario</h1>
+    <a href="/">Inicio</a>
+    <a href="/pacientes">Pacientes</a>
+    <a href="/atenciones">Atenciones</a>
+    <a href="/seguros">Seguros</a>
+    <a href="/contactos">Contactos</a>
+    <a href="/usuarios">Usuarios</a>
+    <a href="/bitacora">Bitácora</a>
+</nav>
+<div class="container">
+
+    <div class="card">
+        <h2>Registrar Paciente</h2>
+        <div id="msg"></div>
+        <div class="form-grid">
+
+            <div class="form-group">
+                <label>Tipo Documento *</label>
+                <select id="idTipoDoc" onchange="actualizarValidacionDoc()">
+                    <option value="">-- Seleccionar --</option>
+                </select>
+                <span class="err-msg" id="err-tipoDoc"></span>
+            </div>
+
+            <div class="form-group">
+                <label>Número Documento *</label>
+                <input type="text" id="numDoc" placeholder="Ingresa el número" oninput="validarDoc()">
+                <span class="hint" id="hint-doc">Selecciona primero el tipo de documento</span>
+                <span class="err-msg" id="err-numDoc"></span>
+            </div>
+
+            <div class="form-group">
+                <label>Nombres *</label>
+                <input type="text" id="nombres" placeholder="Juan Carlos" oninput="validarNombres()">
+                <span class="err-msg" id="err-nombres"></span>
+            </div>
+
+            <div class="form-group">
+                <label>Apellido Paterno *</label>
+                <input type="text" id="apPaterno" placeholder="Garcia" oninput="validarApPaterno()">
+                <span class="err-msg" id="err-apPaterno"></span>
+            </div>
+
+            <div class="form-group">
+                <label>Apellido Materno *</label>
+                <input type="text" id="apMaterno" placeholder="Lopez" oninput="validarApMaterno()">
+                <span class="err-msg" id="err-apMaterno"></span>
+            </div>
+
+            <div class="form-group">
+                <label>Fecha Nacimiento *</label>
+                <input type="date" id="fechaNac" onchange="validarFecha()">
+                <span class="err-msg" id="err-fechaNac"></span>
+            </div>
+
+            <div class="form-group">
+                <label>Sexo *</label>
+                <select id="sexo">
+                    <option value="">-- Seleccionar --</option>
+                    <option>Masculino</option>
+                    <option>Femenino</option>
+                    <option>Otro</option>
+                </select>
+                <span class="err-msg" id="err-sexo"></span>
+            </div>
+
+            <div class="form-group">
+                <label>Teléfono *</label>
+                <input type="text" id="telefono" placeholder="9 dígitos" maxlength="9" oninput="validarTelefono()">
+                <span class="hint">Debe tener 9 dígitos</span>
+                <span class="err-msg" id="err-telefono"></span>
+            </div>
+
+            <div class="form-group">
+                <label>Correo Electrónico</label>
+                <input type="email" id="correo" placeholder="juan@email.com" oninput="validarCorreo()">
+                <span class="err-msg" id="err-correo"></span>
+            </div>
+
+            <div class="form-group">
+                <label>Dirección</label>
+                <input type="text" id="direccion" placeholder="Av. Lima 123">
+            </div>
+
+            <div class="form-group">
+                <label>Ocupación</label>
+                <input type="text" id="ocupacion" placeholder="Ingeniero">
+            </div>
+
+            <div class="form-group">
+                <label>Tipo de Sangre</label>
+                <select id="tipoSangre">
+                    <option value="">-- Seleccionar --</option>
+                    <option>A+</option><option>A-</option>
+                    <option>B+</option><option>B-</option>
+                    <option>O+</option><option>O-</option>
+                    <option>AB+</option><option>AB-</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Estado Civil</label>
+                <select id="estadoCivil">
+                    <option value="">-- Seleccionar --</option>
+                    <option>Soltero</option>
+                    <option>Casado</option>
+                    <option>Viudo</option>
+                    <option>Divorciado</option>
+                </select>
+            </div>
+
+        </div>
+        <br>
+        <button class="btn btn-primary" onclick="registrarPaciente()">Registrar Paciente</button>
+    </div>
+
+    <div class="card">
+        <h2>Buscar Paciente</h2>
+        <div class="search-row">
+            <input type="text" id="busqueda" placeholder="Nombre, apellido, documento o código PAC-XXXX">
+            <button class="btn btn-search" onclick="buscar()">Buscar</button>
+            <button class="btn btn-primary" onclick="listarTodos()">Ver Todos</button>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>Lista de Pacientes</h2>
+        <table>
+            <thead>
+            <tr>
+                <th>ID</th><th>Código</th><th>Nombres</th>
+                <th>Documento</th><th>Edad</th><th>Teléfono</th><th>Estado</th>
+            </tr>
+            </thead>
+            <tbody id="bodyPacientes">
+            <tr><td colspan="7" style="text-align:center;color:#888">Cargando...</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    const API = 'http://localhost:8081';
+
+    // Reglas por tipo de documento
+    const reglasDoc = {
+        'DNI':       { min: 8,  max: 8,  tipo: 'number', desc: '8 dígitos numéricos' },
+        'CE':        { min: 9,  max: 12, tipo: 'alphanum', desc: '9 a 12 caracteres alfanuméricos' },
+        'PASAPORTE': { min: 6,  max: 12, tipo: 'alphanum', desc: '6 a 12 caracteres alfanuméricos' },
+        'RUC':       { min: 11, max: 11, tipo: 'number', desc: '11 dígitos numéricos' },
+        'CIP':       { min: 8,  max: 8,  tipo: 'number', desc: '8 dígitos numéricos' },
+    };
+
+    let tipoDocActual = '';
+
+    async function cargarTiposDocumento() {
+        try {
+            const res = await fetch(`${API}/api/catalogos/tipo-documento`);
+            const data = await res.json();
+            const select = document.getElementById('idTipoDoc');
+            select.innerHTML = '<option value="">-- Seleccionar --</option>';
+            data.forEach(td => {
+                const opt = document.createElement('option');
+                opt.value = td.idTipoDocumento;
+                opt.textContent = td.nombre;
+                opt.dataset.nombre = td.nombre.toUpperCase();
+                select.appendChild(opt);
+            });
+        } catch(e) {
+            document.getElementById('idTipoDoc').innerHTML = '<option value="">Error al cargar</option>';
+        }
+    }
+
+    function actualizarValidacionDoc() {
+        const sel = document.getElementById('idTipoDoc');
+        const opt = sel.options[sel.selectedIndex];
+        tipoDocActual = opt ? opt.dataset.nombre : '';
+        const regla = reglasDoc[tipoDocActual];
+        const hint = document.getElementById('hint-doc');
+        hint.textContent = regla ? `${regla.desc}` : 'Selecciona primero el tipo de documento';
+        document.getElementById('numDoc').value = '';
+        document.getElementById('err-numDoc').textContent = '';
+    }
+
+    function validarDoc() {
+        const val = document.getElementById('numDoc').value.trim();
+        const err = document.getElementById('err-numDoc');
+        const inp = document.getElementById('numDoc');
+        const regla = reglasDoc[tipoDocActual];
+        if (!regla) { err.textContent = ''; return true; }
+        if (val.length < regla.min || val.length > regla.max) {
+            err.textContent = `Debe tener ${regla.min === regla.max ? regla.min : regla.min+'-'+regla.max} caracteres`;
+            inp.classList.add('error'); return false;
+        }
+        if (regla.tipo === 'number' && !/^\d+$/.test(val)) {
+            err.textContent = 'Solo se permiten números';
+            inp.classList.add('error'); return false;
+        }
+        if (regla.tipo === 'alphanum' && !/^[A-Za-z0-9]+$/.test(val)) {
+            err.textContent = 'Solo letras y números';
+            inp.classList.add('error'); return false;
+        }
+        err.textContent = ''; inp.classList.remove('error'); return true;
+    }
+
+    function validarNombres() {
+        const val = document.getElementById('nombres').value.trim();
+        const err = document.getElementById('err-nombres');
+        const inp = document.getElementById('nombres');
+        if (val.length < 2) { err.textContent = 'Mínimo 2 caracteres'; inp.classList.add('error'); return false; }
+        if (!/^[A-Za-záéíóúÁÉÍÓÚñÑ ]+$/.test(val)) { err.textContent = 'Solo letras'; inp.classList.add('error'); return false; }
+        err.textContent = ''; inp.classList.remove('error'); return true;
+    }
+
+    function validarApPaterno() {
+        const val = document.getElementById('apPaterno').value.trim();
+        const err = document.getElementById('err-apPaterno');
+        const inp = document.getElementById('apPaterno');
+        if (val.length < 2) { err.textContent = 'Mínimo 2 caracteres'; inp.classList.add('error'); return false; }
+        if (!/^[A-Za-záéíóúÁÉÍÓÚñÑ ]+$/.test(val)) { err.textContent = 'Solo letras'; inp.classList.add('error'); return false; }
+        err.textContent = ''; inp.classList.remove('error'); return true;
+    }
+
+    function validarApMaterno() {
+        const val = document.getElementById('apMaterno').value.trim();
+        const err = document.getElementById('err-apMaterno');
+        const inp = document.getElementById('apMaterno');
+        if (val.length < 2) { err.textContent = 'Mínimo 2 caracteres'; inp.classList.add('error'); return false; }
+        if (!/^[A-Za-záéíóúÁÉÍÓÚñÑ ]+$/.test(val)) { err.textContent = 'Solo letras'; inp.classList.add('error'); return false; }
+        err.textContent = ''; inp.classList.remove('error'); return true;
+    }
+
+    function validarFecha() {
+        const val = document.getElementById('fechaNac').value;
+        const err = document.getElementById('err-fechaNac');
+        const inp = document.getElementById('fechaNac');
+        if (!val) { err.textContent = 'La fecha es obligatoria'; inp.classList.add('error'); return false; }
+        const hoy = new Date();
+        const fecha = new Date(val);
+        if (fecha >= hoy) { err.textContent = 'La fecha no puede ser futura'; inp.classList.add('error'); return false; }
+        const edad = (hoy - fecha) / (1000 * 60 * 60 * 24 * 365.25);
+        if (edad > 120) { err.textContent = 'Fecha inválida'; inp.classList.add('error'); return false; }
+        err.textContent = ''; inp.classList.remove('error'); return true;
+    }
+
+    function validarTelefono() {
+        const val = document.getElementById('telefono').value.trim();
+        const err = document.getElementById('err-telefono');
+        const inp = document.getElementById('telefono');
+        if (!/^\d{9}$/.test(val)) { err.textContent = 'Debe tener exactamente 9 dígitos'; inp.classList.add('error'); return false; }
+        err.textContent = ''; inp.classList.remove('error'); return true;
+    }
+
+    function validarCorreo() {
+        const val = document.getElementById('correo').value.trim();
+        const err = document.getElementById('err-correo');
+        const inp = document.getElementById('correo');
+        if (val && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val)) {
+            err.textContent = 'Correo inválido'; inp.classList.add('error'); return false;
+        }
+        err.textContent = ''; inp.classList.remove('error'); return true;
+    }
+
+    function validarTodo() {
+        const tipoDoc = document.getElementById('idTipoDoc').value;
+        const sexo = document.getElementById('sexo').value;
+        let ok = true;
+
+        if (!tipoDoc) { document.getElementById('err-tipoDoc').textContent = 'Selecciona un tipo de documento'; ok = false; }
+        else { document.getElementById('err-tipoDoc').textContent = ''; }
+
+        if (!sexo) { document.getElementById('err-sexo').textContent = 'Selecciona el sexo'; ok = false; }
+        else { document.getElementById('err-sexo').textContent = ''; }
+
+        if (!validarDoc()) ok = false;
+        if (!validarNombres()) ok = false;
+        if (!validarApPaterno()) ok = false;
+        if (!validarApMaterno()) ok = false;
+        if (!validarFecha()) ok = false;
+        if (!validarTelefono()) ok = false;
+        if (!validarCorreo()) ok = false;
+        return ok;
+    }
+
+    async function registrarPaciente() {
+        if (!validarTodo()) {
+            const msg = document.getElementById('msg');
+            msg.className = 'msg-err'; msg.style.display = 'block';
+            msg.textContent = 'Corrige los errores antes de continuar.';
+            return;
+        }
+        const body = {
+            tipoDocumento: { idTipoDocumento: parseInt(document.getElementById('idTipoDoc').value) },
+            numeroDocumento: document.getElementById('numDoc').value.trim(),
+            nombres: document.getElementById('nombres').value.trim(),
+            apellidoPaterno: document.getElementById('apPaterno').value.trim(),
+            apellidoMaterno: document.getElementById('apMaterno').value.trim(),
+            fechaNacimiento: document.getElementById('fechaNac').value,
+            sexo: document.getElementById('sexo').value,
+            telefono: document.getElementById('telefono').value.trim(),
+            correoElectronico: document.getElementById('correo').value.trim(),
+            direccion: document.getElementById('direccion').value.trim(),
+            ocupacion: document.getElementById('ocupacion').value.trim(),
+            tipoSangre: document.getElementById('tipoSangre').value,
+            estadoCivil: document.getElementById('estadoCivil').value,
+            ubigeo: { idUbigeo: 1 }
+        };
+        try {
+            const res = await fetch(`${API}/api/pacientes`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body)
+            });
+            const data = await res.json();
+            const msg = document.getElementById('msg');
+            if (res.ok) {
+                msg.className = 'msg-ok'; msg.style.display = 'block';
+                msg.textContent = `Paciente registrado con código: ${data.codigoPaciente}`;
+                listarTodos();
+            } else {
+                msg.className = 'msg-err'; msg.style.display = 'block';
+                msg.textContent = typeof data === 'string' ? data : 'Error al registrar paciente.';
+            }
+        } catch(e) { alert('Error de conexión con el servidor'); }
+    }
+
+    async function listarTodos() {
+        const res = await fetch(`${API}/api/pacientes`);
+        const data = await res.json();
+        renderTabla(data);
+    }
+
+    async function buscar() {
+        const q = document.getElementById('busqueda').value.trim();
+        if (!q) return listarTodos();
+        let url = '';
+        if (q.toUpperCase().startsWith('PAC-')) url = `${API}/api/pacientes/codigo/${q}`;
+        else if (/^\d{8,}$/.test(q)) url = `${API}/api/pacientes/documento/${q}`;
+        else url = `${API}/api/pacientes/buscar?nombres=${encodeURIComponent(q)}`;
+        const res = await fetch(url);
+        const data = await res.json();
+        renderTabla(Array.isArray(data) ? data : [data]);
+    }
+
+    function renderTabla(lista) {
+        const tbody = document.getElementById('bodyPacientes');
+        if (!lista || lista.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#888">Sin resultados</td></tr>';
+            return;
+        }
+        tbody.innerHTML = lista.map(p => `
+            <tr>
+                <td>${p.idPaciente}</td>
+                <td><b>${p.codigoPaciente}</b></td>
+                <td>${p.nombres} ${p.apellidoPaterno} ${p.apellidoMaterno}</td>
+                <td>${p.numeroDocumento}</td>
+                <td>${p.edad ?? '-'}</td>
+                <td>${p.telefono ?? '-'}</td>
+                <td><span class="badge badge-${p.estado?.toLowerCase()}">${p.estado}</span></td>
+            </tr>
+        `).join('');
+    }
+
+    cargarTiposDocumento();
+    listarTodos();
+</script>
+</body>
+</html>
