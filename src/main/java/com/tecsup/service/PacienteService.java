@@ -26,11 +26,14 @@ public class PacienteService {
         return pacienteRepository.save(paciente);
     }
 
-    // RF-PAC-03: generarCodigo() — implementado por INT-2
-    String generarCodigo() {
+    // RF-PAC-03 — este método es del INT-2
+    private String generarCodigo() {
         String codigo;
         do {
-            codigo = "PAC-" + UUID.randomUUID().toString().substring(0,8).toUpperCase();
+            codigo = "PAC-" + UUID.randomUUID()
+                    .toString()
+                    .substring(0, 8)
+                    .toUpperCase();
         } while (pacienteRepository.findByCodigoPaciente(codigo).isPresent());
         return codigo;
     }
