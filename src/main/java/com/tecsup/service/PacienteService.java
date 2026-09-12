@@ -16,17 +16,16 @@ public class PacienteService {
     @Autowired private BitacoraPacienteRepository bitacoraRepository;
     @Autowired private UsuarioRepository usuarioRepository;
 
-    // RF-PAC-01: registrar paciente
-    // RF-PAC-02: validar documento no duplicado
+    // RF-PAC-01 + RF-PAC-02: registrar paciente
     public Paciente registrarPaciente(Paciente paciente) {
         if (pacienteRepository.existsByNumeroDocumento(paciente.getNumeroDocumento()))
             throw new RuntimeException("El número de documento ya está registrado.");
-        paciente.setCodigoPaciente(generarCodigo()); // RF-PAC-03 (INT-2)
+        paciente.setCodigoPaciente(generarCodigo());
         paciente.setEstado("Activo");
         return pacienteRepository.save(paciente);
     }
 
-    // RF-PAC-03 — este método es del INT-2
+    // RF-PAC-03: código único autogenerado
     private String generarCodigo() {
         String codigo;
         do {
@@ -38,7 +37,7 @@ public class PacienteService {
         return codigo;
     }
 
-    // RF-PAC-05: búsquedas — implementadas por INT-3
+    // RF-PAC-05: búsquedas
     public Optional<Paciente> buscarPorDocumento(String num) {
         return pacienteRepository.findByNumeroDocumento(num);
     }
@@ -54,12 +53,16 @@ public class PacienteService {
     public List<Paciente> buscarPorApellidoMaterno(String a) {
         return pacienteRepository.findByApellidoMaternoContainingIgnoreCase(a);
     }
+
+    // RF-PAC-06: info completa
     public Optional<Paciente> obtenerPacienteCompleto(Integer id) {
         return pacienteRepository.findById(id);
     }
-    public List<Paciente> listarTodos() { return pacienteRepository.findAll(); }
+    public List<Paciente> listarTodos() {
+        return pacienteRepository.findAll();
+    }
 
-    // RF-PAC-08: actualizar — implementado por INT-4
+    // RF-PAC-08: actualizar paciente
     public Paciente actualizarPaciente(Integer id, Paciente datos, Integer idUsuario) {
         Paciente e = pacienteRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Paciente no encontrado."));
@@ -82,24 +85,25 @@ public class PacienteService {
         return pacienteRepository.save(e);
     }
 
-    // RF-PAC-13: no eliminar físicamente si tiene atenciones
+    // RF-PAC-13: eliminación lógica
     public void eliminarPaciente(Integer id) {
         Paciente p = pacienteRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Paciente no encontrado."));
         if (p.getAtenciones() != null && !p.getAtenciones().isEmpty()) {
-            p.setEstado("Inactivo"); // solo desactiva
+            p.setEstado("Inactivo");
             pacienteRepository.save(p);
         } else {
             pacienteRepository.delete(p);
         }
     }
 
-    // RF-PAC-12: bitácora — usado por INT-4 y INT-6
-    public void registrarBitacora(Paciente p, Usuario u,
+    // RF-PAC-12: registrar bitácora
+    public void registrarBitacora(Paciente paciente, Usuario usuario,
                                   String campo, String anterior, String nuevo) {
         if (anterior != null && anterior.equals(nuevo)) return;
         BitacoraPaciente log = new BitacoraPaciente();
-        log.setPaciente(p); log.setUsuario(u);
+        log.setPaciente(paciente);
+        log.setUsuario(usuario);
         log.setFechaHora(LocalDateTime.now());
         log.setAccion("edición");
         log.setCampoModificado(campo);
@@ -108,7 +112,9 @@ public class PacienteService {
         bitacoraRepository.save(log);
     }
 
-    public List<BitacoraPaciente> obtenerBitacora(Integer id) {
-        return bitacoraRepository.findByPacienteIdPacienteOrderByFechaHoraDesc(id);
+    // RF-PAC-12: consultar bitácora
+    public List<BitacoraPaciente> obtenerBitacora(Integer idPaciente) {
+        return bitacoraRepository
+                .findByPacienteIdPacienteOrderByFechaHoraDesc(idPaciente);
     }
 }

@@ -2,7 +2,6 @@ package com.tecsup.controller;
 
 import com.tecsup.model.TipoDocumento;
 import com.tecsup.model.Ubigeo;
-import com.tecsup.repository.TipoDocumentoRepository;
 import com.tecsup.repository.UbigeoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
