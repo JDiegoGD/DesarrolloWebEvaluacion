@@ -29,30 +29,48 @@ public class SeguroPaciente {
     @Column(length = 20)  private String estadoCobertura;
 
     @JsonIgnore
-    public Integer getIdSeguroPaciente() { return idSeguroPaciente; }
-    public void setIdSeguroPaciente(Integer id) { this.idSeguroPaciente = id; }
+    public Integer getIdSeguroPaciente() {
+        return idSeguroPaciente; }
+    public void setIdSeguroPaciente(Integer id) {
+        this.idSeguroPaciente = id; }
 
-    public Paciente getPaciente() { return paciente; }
-    public void setPaciente(Paciente paciente) { this.paciente = paciente; }
+    public Paciente getPaciente() {
+        return paciente; }
+    public void setPaciente(Paciente paciente) {
+        this.paciente = paciente; }
 
-    public String getTipoSeguro() { return tipoSeguro; }
-    public void setTipoSeguro(String tipoSeguro) { this.tipoSeguro = tipoSeguro; }
+    public String getTipoSeguro() {
+        return tipoSeguro; }
+    public void setTipoSeguro(String tipoSeguro) {
+        this.tipoSeguro = tipoSeguro; }
 
-    public String getEmpresaAseguradora() { return empresaAseguradora; }
-    public void setEmpresaAseguradora(String empresaAseguradora) { this.empresaAseguradora = empresaAseguradora; }
+    public String getEmpresaAseguradora() {
+        return empresaAseguradora; }
+    public void setEmpresaAseguradora(String empresaAseguradora) {
+        this.empresaAseguradora = empresaAseguradora; }
 
-    public String getNumeroPoliza() { return numeroPoliza; }
-    public void setNumeroPoliza(String numeroPoliza) { this.numeroPoliza = numeroPoliza; }
+    public String getNumeroPoliza() {
+        return numeroPoliza; }
+    public void setNumeroPoliza(String numeroPoliza) {
+        this.numeroPoliza = numeroPoliza; }
 
-    public String getNumeroAfiliacion() { return numeroAfiliacion; }
-    public void setNumeroAfiliacion(String numeroAfiliacion) { this.numeroAfiliacion = numeroAfiliacion; }
+    public String getNumeroAfiliacion() {
+        return numeroAfiliacion; }
+    public void setNumeroAfiliacion(String numeroAfiliacion) {
+        this.numeroAfiliacion = numeroAfiliacion; }
 
-    public LocalDate getFechaInicio() { return fechaInicio; }
-    public void setFechaInicio(LocalDate fechaInicio) { this.fechaInicio = fechaInicio; }
+    public LocalDate getFechaInicio() {
+        return fechaInicio; }
+    public void setFechaInicio(LocalDate fechaInicio) {
+        this.fechaInicio = fechaInicio; }
 
-    public LocalDate getFechaVencimiento() { return fechaVencimiento; }
-    public void setFechaVencimiento(LocalDate fechaVencimiento) { this.fechaVencimiento = fechaVencimiento; }
+    public LocalDate getFechaVencimiento() {
+        return fechaVencimiento; }
+    public void setFechaVencimiento(LocalDate fechaVencimiento) {
+        this.fechaVencimiento = fechaVencimiento; }
 
-    public String getEstadoCobertura() { return estadoCobertura; }
-    public void setEstadoCobertura(String estadoCobertura) { this.estadoCobertura = estadoCobertura; }
+    public String getEstadoCobertura() {
+        return estadoCobertura; }
+    public void setEstadoCobertura(String estadoCobertura) {
+        this.estadoCobertura = estadoCobertura; }
 }

@@ -109,67 +109,111 @@ public class Paciente {
     private List<BitacoraPaciente> bitacora;
 
     @JsonIgnore
-    public Integer getIdPaciente() { return idPaciente; }
-    public void setIdPaciente(Integer idPaciente) { this.idPaciente = idPaciente; }
+    public Integer getIdPaciente() {
+        return idPaciente; }
+    public void setIdPaciente(Integer idPaciente) {
+        this.idPaciente = idPaciente; }
 
-    public String getCodigoPaciente() { return codigoPaciente; }
-    public void setCodigoPaciente(String codigoPaciente) { this.codigoPaciente = codigoPaciente; }
+    public String getCodigoPaciente() {
+        return codigoPaciente; }
+    public void setCodigoPaciente(String codigoPaciente) {
+        this.codigoPaciente = codigoPaciente; }
 
-    public TipoDocumento getTipoDocumento() { return tipoDocumento; }
-    public void setTipoDocumento(TipoDocumento tipoDocumento) { this.tipoDocumento = tipoDocumento; }
+    public TipoDocumento getTipoDocumento() {
+        return tipoDocumento; }
+    public void setTipoDocumento(TipoDocumento tipoDocumento) {
+        this.tipoDocumento = tipoDocumento; }
 
-    public String getNumeroDocumento() { return numeroDocumento; }
-    public void setNumeroDocumento(String numeroDocumento) { this.numeroDocumento = numeroDocumento; }
+    public String getNumeroDocumento() {
+        return numeroDocumento; }
+    public void setNumeroDocumento(String numeroDocumento) {
+        this.numeroDocumento = numeroDocumento; }
 
-    public String getNombres() { return nombres; }
-    public void setNombres(String nombres) { this.nombres = nombres; }
+    public String getNombres() {
+        return nombres; }
+    public void setNombres(String nombres) {
+        this.nombres = nombres; }
 
-    public String getApellidoPaterno() { return apellidoPaterno; }
-    public void setApellidoPaterno(String apellidoPaterno) { this.apellidoPaterno = apellidoPaterno; }
+    public String getApellidoPaterno() {
+        return apellidoPaterno; }
+    public void setApellidoPaterno(String apellidoPaterno) {
+        this.apellidoPaterno = apellidoPaterno; }
 
-    public String getApellidoMaterno() { return apellidoMaterno; }
-    public void setApellidoMaterno(String apellidoMaterno) { this.apellidoMaterno = apellidoMaterno; }
+    public String getApellidoMaterno() {
+        return apellidoMaterno; }
+    public void setApellidoMaterno(String apellidoMaterno) {
+        this.apellidoMaterno = apellidoMaterno; }
 
-    public LocalDate getFechaNacimiento() { return fechaNacimiento; }
-    public void setFechaNacimiento(LocalDate fechaNacimiento) { this.fechaNacimiento = fechaNacimiento; }
+    public LocalDate getFechaNacimiento() {
+        return fechaNacimiento; }
+    public void setFechaNacimiento(LocalDate fechaNacimiento) {
+        this.fechaNacimiento = fechaNacimiento; }
 
-    public String getSexo() { return sexo; }
-    public void setSexo(String sexo) { this.sexo = sexo; }
+    public String getSexo() {
+        return sexo; }
+    public void setSexo(String sexo) {
+        this.sexo = sexo; }
 
-    public String getEstadoCivil() { return estadoCivil; }
-    public void setEstadoCivil(String estadoCivil) { this.estadoCivil = estadoCivil; }
+    public String getEstadoCivil() {
+        return estadoCivil; }
+    public void setEstadoCivil(String estadoCivil) {
+        this.estadoCivil = estadoCivil; }
 
-    public String getTelefono() { return telefono; }
-    public void setTelefono(String telefono) { this.telefono = telefono; }
+    public String getTelefono() {
+        return telefono; }
+    public void setTelefono(String telefono) {
+        this.telefono = telefono; }
 
-    public String getCorreoElectronico() { return correoElectronico; }
-    public void setCorreoElectronico(String correoElectronico) { this.correoElectronico = correoElectronico; }
+    public String getCorreoElectronico() {
+        return correoElectronico; }
+    public void setCorreoElectronico(String correoElectronico) {
+        this.correoElectronico = correoElectronico; }
 
-    public String getDireccion() { return direccion; }
-    public void setDireccion(String direccion) { this.direccion = direccion; }
+    public String getDireccion() {
+        return direccion; }
+    public void setDireccion(String direccion) {
+        this.direccion = direccion; }
 
-    public Ubigeo getUbigeo() { return ubigeo; }
-    public void setUbigeo(Ubigeo ubigeo) { this.ubigeo = ubigeo; }
+    public Ubigeo getUbigeo() {
+        return ubigeo; }
+    public void setUbigeo(Ubigeo ubigeo) {
+        this.ubigeo = ubigeo; }
 
-    public String getOcupacion() { return ocupacion; }
-    public void setOcupacion(String ocupacion) { this.ocupacion = ocupacion; }
+    public String getOcupacion() {
+        return ocupacion; }
+    public void setOcupacion(String ocupacion) {
+        this.ocupacion = ocupacion; }
 
-    public String getTipoSangre() { return tipoSangre; }
-    public void setTipoSangre(String tipoSangre) { this.tipoSangre = tipoSangre; }
+    public String getTipoSangre() {
+        return tipoSangre; }
+    public void setTipoSangre(String tipoSangre) {
+        this.tipoSangre = tipoSangre; }
 
-    public String getEstado() { return estado; }
-    public void setEstado(String estado) { this.estado = estado; }
+    public String getEstado() {
+        return estado; }
+    public void setEstado(String estado) {
+        this.estado = estado; }
 
-    public String getFotografiaUrl() { return fotografiaUrl; }
-    public void setFotografiaUrl(String fotografiaUrl) { this.fotografiaUrl = fotografiaUrl; }
+    public String getFotografiaUrl() {
+        return fotografiaUrl; }
+    public void setFotografiaUrl(String fotografiaUrl) {
+        this.fotografiaUrl = fotografiaUrl; }
 
-    public LocalDateTime getFechaRegistro() { return fechaRegistro; }
+    public LocalDateTime getFechaRegistro() {
+        return fechaRegistro; }
 
-    public List<ContactoEmergencia> getContactosEmergencia() { return contactosEmergencia; }
-    public List<SeguroPaciente> getSeguros() { return seguros; }
-    public List<Atencion> getAtenciones() { return atenciones; }
-    public List<AntecedentePersonal> getAntecedentesPersonales() { return antecedentesPersonales; }
-    public List<AntecedenteFamiliar> getAntecedentesFamiliares() { return antecedentesFamiliares; }
-    public List<Alergia> getAlergias() { return alergias; }
-    public List<BitacoraPaciente> getBitacora() { return bitacora; }
+    public List<ContactoEmergencia> getContactosEmergencia() {
+        return contactosEmergencia; }
+    public List<SeguroPaciente> getSeguros() {
+        return seguros; }
+    public List<Atencion> getAtenciones() {
+        return atenciones; }
+    public List<AntecedentePersonal> getAntecedentesPersonales() {
+        return antecedentesPersonales; }
+    public List<AntecedenteFamiliar> getAntecedentesFamiliares() {
+        return antecedentesFamiliares; }
+    public List<Alergia> getAlergias() {
+        return alergias; }
+    public List<BitacoraPaciente> getBitacora() {
+        return bitacora; }
 }

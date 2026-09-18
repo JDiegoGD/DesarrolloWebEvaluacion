@@ -21,12 +21,18 @@ public class Usuario {
     private String rol;
 
     @JsonIgnore
-    public Integer getIdUsuario() { return idUsuario; }
-    public void setIdUsuario(Integer idUsuario) { this.idUsuario = idUsuario; }
+    public Integer getIdUsuario() {
+        return idUsuario; }
+    public void setIdUsuario(Integer idUsuario) {
+        this.idUsuario = idUsuario; }
 
-    public String getNombreUsuario() { return nombreUsuario; }
-    public void setNombreUsuario(String nombreUsuario) { this.nombreUsuario = nombreUsuario; }
+    public String getNombreUsuario() {
+        return nombreUsuario; }
+    public void setNombreUsuario(String nombreUsuario) {
+        this.nombreUsuario = nombreUsuario; }
 
-    public String getRol() { return rol; }
-    public void setRol(String rol) { this.rol = rol; }
+    public String getRol() {
+        return rol; }
+    public void setRol(String rol) {
+        this.rol = rol; }
 }

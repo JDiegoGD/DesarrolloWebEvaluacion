@@ -26,15 +26,23 @@ public class Atencion {
     private String motivo;
 
     @JsonIgnore
-    public Integer getIdAtencion() { return idAtencion; }
-    public void setIdAtencion(Integer idAtencion) { this.idAtencion = idAtencion; }
+    public Integer getIdAtencion() {
+        return idAtencion; }
+    public void setIdAtencion(Integer idAtencion) {
+        this.idAtencion = idAtencion; }
 
-    public Paciente getPaciente() { return paciente; }
-    public void setPaciente(Paciente paciente) { this.paciente = paciente; }
+    public Paciente getPaciente() {
+        return paciente; }
+    public void setPaciente(Paciente paciente) {
+        this.paciente = paciente; }
 
-    public LocalDate getFechaAtencion() { return fechaAtencion; }
-    public void setFechaAtencion(LocalDate fechaAtencion) { this.fechaAtencion = fechaAtencion; }
+    public LocalDate getFechaAtencion() {
+        return fechaAtencion; }
+    public void setFechaAtencion(LocalDate fechaAtencion) {
+        this.fechaAtencion = fechaAtencion; }
 
-    public String getMotivo() { return motivo; }
-    public void setMotivo(String motivo) { this.motivo = motivo; }
+    public String getMotivo() {
+        return motivo; }
+    public void setMotivo(String motivo) {
+        this.motivo = motivo; }
 }

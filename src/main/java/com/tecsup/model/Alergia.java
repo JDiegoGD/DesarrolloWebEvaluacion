@@ -18,18 +18,28 @@ public class Alergia {
     @Column(length = 200) private String descripcion;
     @Column(length = 200) private String reaccion;
 
-    public Integer getIdAlergia() { return idAlergia; }
-    public void setIdAlergia(Integer idAlergia) { this.idAlergia = idAlergia; }
+    public Integer getIdAlergia() {
+        return idAlergia; }
+    public void setIdAlergia(Integer idAlergia) {
+        this.idAlergia = idAlergia; }
 
-    public Paciente getPaciente() { return paciente; }
-    public void setPaciente(Paciente paciente) { this.paciente = paciente; }
+    public Paciente getPaciente() {
+        return paciente; }
+    public void setPaciente(Paciente paciente) {
+        this.paciente = paciente; }
 
-    public String getTipo() { return tipo; }
-    public void setTipo(String tipo) { this.tipo = tipo; }
+    public String getTipo() {
+        return tipo; }
+    public void setTipo(String tipo) {
+        this.tipo = tipo; }
 
-    public String getDescripcion() { return descripcion; }
-    public void setDescripcion(String descripcion) { this.descripcion = descripcion; }
+    public String getDescripcion() {
+        return descripcion; }
+    public void setDescripcion(String descripcion) {
+        this.descripcion = descripcion; }
 
-    public String getReaccion() { return reaccion; }
-    public void setReaccion(String reaccion) { this.reaccion = reaccion; }
+    public String getReaccion() {
+        return reaccion; }
+    public void setReaccion(String reaccion) {
+        this.reaccion = reaccion; }
 }

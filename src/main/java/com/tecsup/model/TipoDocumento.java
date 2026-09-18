@@ -26,15 +26,23 @@ public class TipoDocumento {
     private List<Paciente> pacientes;
 
     @JsonIgnore
-    public Integer getIdTipoDocumento() { return idTipoDocumento; }
-    public void setIdTipoDocumento(Integer idTipoDocumento) { this.idTipoDocumento = idTipoDocumento; }
+    public Integer getIdTipoDocumento() {
+        return idTipoDocumento; }
+    public void setIdTipoDocumento(Integer idTipoDocumento) {
+        this.idTipoDocumento = idTipoDocumento; }
 
-    public String getCodigo() { return codigo; }
-    public void setCodigo(String codigo) { this.codigo = codigo; }
+    public String getCodigo() {
+        return codigo; }
+    public void setCodigo(String codigo) {
+        this.codigo = codigo; }
 
-    public String getNombre() { return nombre; }
-    public void setNombre(String nombre) { this.nombre = nombre; }
+    public String getNombre() {
+        return nombre; }
+    public void setNombre(String nombre) {
+        this.nombre = nombre; }
 
-    public List<Paciente> getPacientes() { return pacientes; }
-    public void setPacientes(List<Paciente> pacientes) { this.pacientes = pacientes; }
+    public List<Paciente> getPacientes() {
+        return pacientes; }
+    public void setPacientes(List<Paciente> pacientes) {
+        this.pacientes = pacientes; }
 }

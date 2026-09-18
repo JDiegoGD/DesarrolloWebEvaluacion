@@ -470,7 +470,7 @@
         document.getElementById('estadoCivil').value = p.estadoCivil || '';
         document.getElementById('estado').value = p.estado || 'Activo';
 
-        // Campos que el backend no permite modificar en la actualización: se muestran solo de referencia
+        // Solo de referencia: el backend no los actualiza
         document.getElementById('numDoc').value = p.numeroDocumento || '';
         document.getElementById('fechaNac').value = p.fechaNacimiento || '';
         document.getElementById('sexo').value = p.sexo || '';
@@ -537,8 +537,7 @@
             return renderTabla([await res.json()]);
         }
 
-        // Número de documento: puede ser DNI, CE, Pasaporte, RUC o CIP (numérico o alfanumérico),
-        // así que se intenta primero por documento sin asumir un formato fijo.
+        // Se intenta por documento primero (DNI, CE, RUC, etc.)
         let res = await fetch(`${API}/api/pacientes/documento/${encodeURIComponent(q)}`, { headers: headersConRol(false) });
         if (res.ok) return renderTabla([await res.json()]);
         if (res.status !== 404) return alert(await res.text());
