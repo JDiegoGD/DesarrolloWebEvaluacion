@@ -186,7 +186,7 @@
 <script>
     const API = 'http://localhost:8081';
 
-    // Reglas por tipo de documento
+    // Reglas por tipo de documento (clave = codigo de tipo_documento)
     const reglasDoc = {
         'DNI':       { min: 8,  max: 8,  tipo: 'number', desc: '8 dígitos numéricos' },
         'CE':        { min: 9,  max: 12, tipo: 'alphanum', desc: '9 a 12 caracteres alfanuméricos' },
@@ -207,7 +207,7 @@
                 const opt = document.createElement('option');
                 opt.value = td.idTipoDocumento;
                 opt.textContent = td.nombre;
-                opt.dataset.nombre = td.nombre.toUpperCase();
+                opt.dataset.codigo = (td.codigo || '').toUpperCase(); // usa el campo codigo del backend
                 select.appendChild(opt);
             });
         } catch(e) {
@@ -218,7 +218,7 @@
     function actualizarValidacionDoc() {
         const sel = document.getElementById('idTipoDoc');
         const opt = sel.options[sel.selectedIndex];
-        tipoDocActual = opt ? opt.dataset.nombre : '';
+        tipoDocActual = opt ? opt.dataset.codigo : '';
         const regla = reglasDoc[tipoDocActual];
         const hint = document.getElementById('hint-doc');
         hint.textContent = regla ? `${regla.desc}` : 'Selecciona primero el tipo de documento';

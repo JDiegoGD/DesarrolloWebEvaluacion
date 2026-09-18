@@ -12,6 +12,9 @@ public class TipoDocumento {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer idTipoDocumento;
 
+    @Column(nullable = false, length = 10, unique = true)
+    private String codigo;
+
     @Column(nullable = false, length = 50)
     private String nombre;
 
@@ -21,6 +24,9 @@ public class TipoDocumento {
 
     public Integer getIdTipoDocumento() { return idTipoDocumento; }
     public void setIdTipoDocumento(Integer idTipoDocumento) { this.idTipoDocumento = idTipoDocumento; }
+
+    public String getCodigo() { return codigo; }
+    public void setCodigo(String codigo) { this.codigo = codigo; }
 
     public String getNombre() { return nombre; }
     public void setNombre(String nombre) { this.nombre = nombre; }
