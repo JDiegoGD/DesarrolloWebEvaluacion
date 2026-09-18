@@ -50,6 +50,15 @@
     <a href="/contactos">Contactos</a>
     <a href="/usuarios">Usuarios</a>
     <a href="/bitacora">Bitácora</a>
+    <label style="color:white;font-size:13px;display:flex;align-items:center;gap:6px">
+        Rol de sesión:
+        <select id="selRol" onchange="cambiarRol()" style="padding:4px 8px;border-radius:6px;border:none">
+            <option value="ADMIN">Admin</option>
+            <option value="MEDICO">Médico</option>
+            <option value="ENFERMERA">Enfermera</option>
+            <option value="RECEPCION">Recepción</option>
+        </select>
+    </label>
 </nav>
 <div class="container">
 
@@ -200,7 +209,23 @@
 </div>
 
 <script>
-    const API = 'http://localhost:8081';
+    const API = 'http://localhost:8080';
+
+    function rolActual() {
+        return localStorage.getItem('sesionRol') || 'ADMIN';
+    }
+    function cambiarRol() {
+        localStorage.setItem('sesionRol', document.getElementById('selRol').value);
+    }
+    function headersConRol(conJson) {
+        const h = { 'X-Rol': rolActual() };
+        if (conJson) h['Content-Type'] = 'application/json';
+        return h;
+    }
+    async function leerRespuesta(res) {
+        const texto = await res.text();
+        try { return JSON.parse(texto); } catch (e) { return texto; }
+    }
 
     // Reglas por tipo de documento (clave = codigo de tipo_documento)
     const reglasDoc = {
@@ -379,10 +404,10 @@
                 }
                 res = await fetch(`${API}/api/pacientes/${idEnEdicion}?idUsuario=${idUsuario}`, {
                     method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: headersConRol(true),
                     body: JSON.stringify(body)
                 });
-                data = await res.json().catch(() => null);
+                data = await leerRespuesta(res);
                 if (res.ok) {
                     msg.className = 'msg-ok'; msg.style.display = 'block';
                     msg.textContent = 'Paciente actualizado correctamente.';
@@ -395,10 +420,10 @@
             } else {
                 res = await fetch(`${API}/api/pacientes`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: headersConRol(true),
                     body: JSON.stringify(body)
                 });
-                data = await res.json();
+                data = await leerRespuesta(res);
                 if (res.ok) {
                     msg.className = 'msg-ok'; msg.style.display = 'block';
                     msg.textContent = `Paciente registrado con código: ${data.codigoPaciente}`;
@@ -412,7 +437,7 @@
     }
 
     async function cargarParaEditar(id) {
-        const res = await fetch(`${API}/api/pacientes/${id}`);
+        const res = await fetch(`${API}/api/pacientes/${id}`, { headers: headersConRol(false) });
         if (!res.ok) return alert('No se pudo cargar el paciente.');
         const p = await res.json();
         idEnEdicion = id;
@@ -461,7 +486,7 @@
     async function eliminarPaciente(id) {
         if (!confirm('¿Seguro que deseas eliminar/desactivar este paciente?')) return;
         try {
-            const res = await fetch(`${API}/api/pacientes/${id}`, { method: 'DELETE' });
+            const res = await fetch(`${API}/api/pacientes/${id}`, { method: 'DELETE', headers: headersConRol(false) });
             const texto = await res.text();
             const msg = document.getElementById('msg');
             if (res.ok) {
@@ -476,7 +501,8 @@
     }
 
     async function listarTodos() {
-        const res = await fetch(`${API}/api/pacientes`);
+        const res = await fetch(`${API}/api/pacientes`, { headers: headersConRol(false) });
+        if (!res.ok) return alert(await res.text());
         const data = await res.json();
         renderTabla(data);
     }
@@ -484,11 +510,24 @@
     async function buscar() {
         const q = document.getElementById('busqueda').value.trim();
         if (!q) return listarTodos();
-        let url = '';
-        if (q.toUpperCase().startsWith('PAC-')) url = `${API}/api/pacientes/codigo/${q}`;
-        else if (/^\d{8,}$/.test(q)) url = `${API}/api/pacientes/documento/${q}`;
-        else url = `${API}/api/pacientes/buscar?nombres=${encodeURIComponent(q)}`;
-        const res = await fetch(url);
+
+        // Código de paciente: PAC-XXXX
+        if (q.toUpperCase().startsWith('PAC-')) {
+            const res = await fetch(`${API}/api/pacientes/codigo/${encodeURIComponent(q)}`, { headers: headersConRol(false) });
+            if (res.status === 404) return renderTabla([]);
+            if (!res.ok) return alert(await res.text());
+            return renderTabla([await res.json()]);
+        }
+
+        // Número de documento: puede ser DNI, CE, Pasaporte, RUC o CIP (numérico o alfanumérico),
+        // así que se intenta primero por documento sin asumir un formato fijo.
+        let res = await fetch(`${API}/api/pacientes/documento/${encodeURIComponent(q)}`, { headers: headersConRol(false) });
+        if (res.ok) return renderTabla([await res.json()]);
+        if (res.status !== 404) return alert(await res.text());
+
+        // Si no coincide con ningún documento, se busca por nombres/apellidos.
+        res = await fetch(`${API}/api/pacientes/buscar?nombres=${encodeURIComponent(q)}`, { headers: headersConRol(false) });
+        if (!res.ok) return alert(await res.text());
         const data = await res.json();
         renderTabla(Array.isArray(data) ? data : [data]);
     }
@@ -516,6 +555,7 @@
         `).join('');
     }
 
+    document.getElementById('selRol').value = rolActual();
     cargarTiposDocumento();
     listarTodos();
 </script>

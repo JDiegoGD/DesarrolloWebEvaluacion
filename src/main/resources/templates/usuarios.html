@@ -46,6 +46,15 @@
     <a href="/contactos">Contactos</a>
     <a href="/usuarios">Usuarios</a>
     <a href="/bitacora">Bitácora</a>
+    <label style="color:white;font-size:13px;display:flex;align-items:center;gap:6px">
+        Rol de sesión:
+        <select id="selRol" onchange="cambiarRol()" style="padding:4px 8px;border-radius:6px;border:none">
+            <option value="ADMIN">Admin</option>
+            <option value="MEDICO">Médico</option>
+            <option value="ENFERMERA">Enfermera</option>
+            <option value="RECEPCION">Recepción</option>
+        </select>
+    </label>
 </nav>
 <div class="container">
 
@@ -100,7 +109,19 @@
 </div>
 
 <script>
-const API = 'http://localhost:8081';
+const API = 'http://localhost:8080';
+
+function rolActual() {
+    return localStorage.getItem('sesionRol') || 'ADMIN';
+}
+function cambiarRol() {
+    localStorage.setItem('sesionRol', document.getElementById('selRol').value);
+}
+function headersConRol(conJson) {
+    const h = { 'X-Rol': rolActual() };
+    if (conJson) h['Content-Type'] = 'application/json';
+    return h;
+}
 
 async function registrarUsuario() {
     const body = {
@@ -109,7 +130,7 @@ async function registrarUsuario() {
     };
     const res = await fetch(`${API}/api/usuarios`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: headersConRol(true),
         body: JSON.stringify(body)
     });
     const msg = document.getElementById('msg');
@@ -119,12 +140,13 @@ async function registrarUsuario() {
         listarTodos();
     } else {
         msg.className = 'msg-err'; msg.style.display = 'block';
-        msg.textContent = 'Error al registrar usuario.';
+        msg.textContent = await res.text() || 'Error al registrar usuario.';
     }
 }
 
 async function listarTodos() {
-    const res = await fetch(`${API}/api/usuarios`);
+    const res = await fetch(`${API}/api/usuarios`, { headers: headersConRol(false) });
+    if (!res.ok) return alert(await res.text());
     const data = await res.json();
     renderTabla(data);
 }
@@ -132,7 +154,8 @@ async function listarTodos() {
 async function filtrar() {
     const rol = document.getElementById('filtroRol').value;
     const url = rol ? `${API}/api/usuarios?rol=${rol}` : `${API}/api/usuarios`;
-    const res = await fetch(url);
+    const res = await fetch(url, { headers: headersConRol(false) });
+    if (!res.ok) return alert(await res.text());
     const data = await res.json();
     renderTabla(data);
 }
@@ -152,6 +175,7 @@ function renderTabla(lista) {
     `).join('');
 }
 
+document.getElementById('selRol').value = rolActual();
 listarTodos();
 </script>
 </body>

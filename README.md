@@ -28,7 +28,7 @@ Proyecto del laboratorio **“Implementación de Persistencia con Spring Boot e 
 4. Abrir en el navegador:
 
    ```text
-   http://localhost:8081
+   http://localhost:8080
    ```
 
 Las tablas se crean automáticamente al iniciar la aplicación, según la configuración de Hibernate.
@@ -53,7 +53,7 @@ Las tablas se crean automáticamente al iniciar la aplicación, según la config
 
 ## Endpoints
 
-URL base: `http://localhost:8081`
+URL base: `http://localhost:8080`
 
 ### Pacientes
 

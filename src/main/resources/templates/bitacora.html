@@ -35,6 +35,15 @@
     <a href="/contactos">Contactos</a>
     <a href="/usuarios">Usuarios</a>
     <a href="/bitacora">Bitácora</a>
+    <label style="color:white;font-size:13px;display:flex;align-items:center;gap:6px">
+        Rol de sesión:
+        <select id="selRol" onchange="cambiarRol()" style="padding:4px 8px;border-radius:6px;border:none">
+            <option value="ADMIN">Admin</option>
+            <option value="MEDICO">Médico</option>
+            <option value="ENFERMERA">Enfermera</option>
+            <option value="RECEPCION">Recepción</option>
+        </select>
+    </label>
 </nav>
 <div class="container">
 
@@ -68,14 +77,25 @@
 </div>
 
 <script>
-const API = 'http://localhost:8081';
+const API = 'http://localhost:8080';
+
+function rolActual() {
+    return localStorage.getItem('sesionRol') || 'ADMIN';
+}
+function cambiarRol() {
+    localStorage.setItem('sesionRol', document.getElementById('selRol').value);
+}
 
 async function buscar() {
     const id = document.getElementById('idPaciente').value;
     if (!id) return;
-    const res = await fetch(`${API}/api/pacientes/${id}/bitacora`);
-    const data = await res.json();
     const tbody = document.getElementById('bodyBitacora');
+    const res = await fetch(`${API}/api/pacientes/${id}/bitacora`, { headers: { 'X-Rol': rolActual() } });
+    if (!res.ok) {
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;color:#c5221f">${await res.text()}</td></tr>`;
+        return;
+    }
+    const data = await res.json();
     if (!data.length) {
         tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#888">Sin registros en bitácora</td></tr>';
         return;
@@ -92,6 +112,8 @@ async function buscar() {
         </tr>
     `).join('');
 }
+
+document.getElementById('selRol').value = rolActual();
 </script>
 </body>
 </html>

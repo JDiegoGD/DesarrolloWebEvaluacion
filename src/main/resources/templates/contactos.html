@@ -103,11 +103,12 @@
 </div>
 
 <script>
-const API = 'http://localhost:8081';
+const API = 'http://localhost:8080';
 
 async function registrarContacto() {
+    const idPaciente = document.getElementById('idPaciente').value;
     const body = {
-        paciente: { idPaciente: parseInt(document.getElementById('idPaciente').value) },
+        paciente: { idPaciente: parseInt(idPaciente) },
         nombreCompleto: document.getElementById('nombre').value,
         parentesco: document.getElementById('parentesco').value,
         telefono: document.getElementById('telefono').value,
@@ -124,18 +125,24 @@ async function registrarContacto() {
     if (res.ok) {
         msg.className = 'msg-ok'; msg.style.display = 'block';
         msg.textContent = 'Contacto registrado correctamente.';
+        document.getElementById('buscarId').value = idPaciente;
+        buscar();
     } else {
         msg.className = 'msg-err'; msg.style.display = 'block';
-        msg.textContent = 'Error al registrar contacto.';
+        msg.textContent = await res.text() || 'Error al registrar contacto.';
     }
 }
 
 async function buscar() {
     const id = document.getElementById('buscarId').value;
     if (!id) return;
-    const res = await fetch(`${API}/api/contactos-emergencia/paciente/${id}`);
-    const data = await res.json();
     const tbody = document.getElementById('bodyContactos');
+    const res = await fetch(`${API}/api/contactos-emergencia/paciente/${id}`);
+    if (!res.ok) {
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:#c5221f">${await res.text()}</td></tr>`;
+        return;
+    }
+    const data = await res.json();
     if (!data.length) {
         tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#888">Sin resultados</td></tr>';
         return;

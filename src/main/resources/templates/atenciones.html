@@ -94,7 +94,7 @@
 </div>
 
 <script>
-const API = 'http://localhost:8081';
+const API = 'http://localhost:8080';
 
 async function registrarAtencion() {
     const body = {
@@ -114,12 +114,13 @@ async function registrarAtencion() {
         listarTodas();
     } else {
         msg.className = 'msg-err'; msg.style.display = 'block';
-        msg.textContent = 'Error al registrar atención.';
+        msg.textContent = await res.text() || 'Error al registrar atención.';
     }
 }
 
 async function listarTodas() {
     const res = await fetch(`${API}/api/atenciones`);
+    if (!res.ok) return alert(await res.text());
     const data = await res.json();
     renderTabla(data);
 }
@@ -128,6 +129,7 @@ async function buscarPorPaciente() {
     const id = document.getElementById('buscarIdPaciente').value;
     if (!id) return;
     const res = await fetch(`${API}/api/atenciones/paciente/${id}`);
+    if (!res.ok) return alert(await res.text());
     const data = await res.json();
     renderTabla(data);
 }
