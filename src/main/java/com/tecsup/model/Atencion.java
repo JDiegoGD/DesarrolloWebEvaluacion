@@ -2,6 +2,7 @@ package com.tecsup.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
 
 @Entity
@@ -12,10 +13,12 @@ public class Atencion {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer idAtencion;
 
+    @NotNull(message = "debes indicar el paciente")
     @ManyToOne
     @JoinColumn(name = "id_paciente", nullable = false)
     private Paciente paciente;
 
+    @NotNull(message = "la fecha de atención es obligatoria")
     @Column(nullable = false)
     private LocalDate fechaAtencion;
 

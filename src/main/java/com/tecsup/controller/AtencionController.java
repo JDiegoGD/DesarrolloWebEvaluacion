@@ -2,6 +2,7 @@ package com.tecsup.controller;
 
 import com.tecsup.model.Atencion;
 import com.tecsup.service.AtencionService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
@@ -21,7 +22,7 @@ public class AtencionController {
     }
 
     @PostMapping
-    public ResponseEntity<?> registrar(@RequestBody Atencion a) {
+    public ResponseEntity<?> registrar(@Valid @RequestBody Atencion a) {
         try {
             return ResponseEntity.status(HttpStatus.CREATED).body(service.registrar(a));
         } catch (RuntimeException e) {

@@ -2,6 +2,8 @@ package com.tecsup.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
 @Entity
 @Table(name = "contacto_emergencia")
@@ -11,10 +13,12 @@ public class ContactoEmergencia {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer idContacto;
 
+    @NotNull(message = "debes indicar el paciente")
     @ManyToOne
     @JoinColumn(name = "id_paciente", nullable = false)
     private Paciente paciente;
 
+    @NotBlank(message = "el nombre completo es obligatorio")
     @Column(nullable = false, length = 150)
     private String nombreCompleto;
 

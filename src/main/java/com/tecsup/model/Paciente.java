@@ -2,6 +2,9 @@ package com.tecsup.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Period;
@@ -18,22 +21,29 @@ public class Paciente {
     @Column(unique = true, length = 20)
     private String codigoPaciente;
 
+    @Valid
+    @NotNull(message = "debes indicar el tipo de documento")
     @ManyToOne
     @JoinColumn(name = "id_tipo_documento", nullable = false)
     private TipoDocumento tipoDocumento;
 
+    @NotBlank(message = "el número de documento es obligatorio")
     @Column(unique = true, nullable = false, length = 20)
     private String numeroDocumento;
 
+    @NotBlank(message = "los nombres son obligatorios")
     @Column(nullable = false, length = 100)
     private String nombres;
 
+    @NotBlank(message = "el apellido paterno es obligatorio")
     @Column(nullable = false, length = 100)
     private String apellidoPaterno;
 
+    @NotBlank(message = "el apellido materno es obligatorio")
     @Column(nullable = false, length = 100)
     private String apellidoMaterno;
 
+    @NotNull(message = "la fecha de nacimiento es obligatoria")
     @Column(nullable = false)
     private LocalDate fechaNacimiento;
 
@@ -43,6 +53,7 @@ public class Paciente {
         return Period.between(this.fechaNacimiento, LocalDate.now()).getYears();
     }
 
+    @NotBlank(message = "el sexo es obligatorio")
     @Column(nullable = false, length = 20)
     private String sexo;
 

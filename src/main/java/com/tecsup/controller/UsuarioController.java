@@ -2,6 +2,7 @@ package com.tecsup.controller;
 
 import com.tecsup.model.Usuario;
 import com.tecsup.service.UsuarioService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
@@ -14,7 +15,7 @@ public class UsuarioController {
     @Autowired private UsuarioService service;
 
     @PostMapping
-    public ResponseEntity<Usuario> registrar(@RequestBody Usuario u) {
+    public ResponseEntity<Usuario> registrar(@Valid @RequestBody Usuario u) {
         return ResponseEntity.status(HttpStatus.CREATED).body(service.registrar(u));
     }
 

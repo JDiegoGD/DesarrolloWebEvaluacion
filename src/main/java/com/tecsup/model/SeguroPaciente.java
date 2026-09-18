@@ -2,6 +2,8 @@ package com.tecsup.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
 
 @Entity
@@ -12,10 +14,12 @@ public class SeguroPaciente {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer idSeguroPaciente;
 
+    @NotNull(message = "debes indicar el paciente")
     @ManyToOne
     @JoinColumn(name = "id_paciente", nullable = false)
     private Paciente paciente;
 
+    @NotBlank(message = "el tipo de seguro es obligatorio")
     @Column(length = 50)  private String tipoSeguro;
     @Column(length = 100) private String empresaAseguradora;
     @Column(length = 50)  private String numeroPoliza;

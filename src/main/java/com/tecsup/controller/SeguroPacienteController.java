@@ -2,6 +2,7 @@ package com.tecsup.controller;
 
 import com.tecsup.model.SeguroPaciente;
 import com.tecsup.service.SeguroPacienteService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
@@ -14,7 +15,7 @@ public class SeguroPacienteController {
     @Autowired private SeguroPacienteService service;
 
     @PostMapping
-    public ResponseEntity<?> registrar(@RequestBody SeguroPaciente s) {
+    public ResponseEntity<?> registrar(@Valid @RequestBody SeguroPaciente s) {
         try {
             return ResponseEntity.status(HttpStatus.CREATED).body(service.registrar(s));
         } catch (RuntimeException e) {

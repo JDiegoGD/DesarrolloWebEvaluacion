@@ -2,6 +2,7 @@ package com.tecsup.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
 import java.util.List;
 
 
@@ -13,6 +14,7 @@ public class TipoDocumento {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer idTipoDocumento;
 
+    @NotBlank(message = "el código del tipo de documento es obligatorio")
     @Column(nullable = false, length = 10, unique = true)
     private String codigo;
 

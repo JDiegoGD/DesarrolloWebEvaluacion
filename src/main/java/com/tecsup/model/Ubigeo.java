@@ -1,6 +1,7 @@
 package com.tecsup.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
 
 @Entity
 @Table(name = "ubigeo")
@@ -10,8 +11,11 @@ public class Ubigeo {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer idUbigeo;
 
+    @NotBlank(message = "el distrito es obligatorio")
     @Column(nullable = false, length = 100) private String distrito;
+    @NotBlank(message = "la provincia es obligatoria")
     @Column(nullable = false, length = 100) private String provincia;
+    @NotBlank(message = "el departamento es obligatorio")
     @Column(nullable = false, length = 100) private String departamento;
 
     public Integer getIdUbigeo() { return idUbigeo; }

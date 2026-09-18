@@ -2,6 +2,7 @@ package com.tecsup.controller;
 
 import com.tecsup.model.*;
 import com.tecsup.service.PacienteService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
@@ -16,7 +17,7 @@ public class PacienteController {
     // RF-PAC-01 + RF-PAC-02: registrar paciente
     // POST /api/pacientes
     @PostMapping
-    public ResponseEntity<?> registrarPaciente(@RequestBody Paciente paciente) {
+    public ResponseEntity<?> registrarPaciente(@Valid @RequestBody Paciente paciente) {
         try {
             return ResponseEntity.status(HttpStatus.CREATED)
                     .body(pacienteService.registrarPaciente(paciente));

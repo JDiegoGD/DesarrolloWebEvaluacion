@@ -2,6 +2,7 @@ package com.tecsup.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
 
 @Entity
 @Table(name = "usuario")
@@ -11,9 +12,11 @@ public class Usuario {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer idUsuario;
 
+    @NotBlank(message = "el nombre de usuario es obligatorio")
     @Column(nullable = false, unique = true, length = 100)
     private String nombreUsuario;
 
+    @NotBlank(message = "el rol es obligatorio")
     @Column(nullable = false, length = 50)
     private String rol;
 

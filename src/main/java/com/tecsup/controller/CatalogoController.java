@@ -4,6 +4,7 @@ import com.tecsup.model.TipoDocumento;
 import com.tecsup.model.Ubigeo;
 import com.tecsup.repository.TipoDocumentoRepository;
 import com.tecsup.repository.UbigeoRepository;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,7 +24,7 @@ public class CatalogoController {
     }
 
     @PostMapping("/tipo-documento")
-    public ResponseEntity<TipoDocumento> crearTipo(@RequestBody TipoDocumento td) {
+    public ResponseEntity<TipoDocumento> crearTipo(@Valid @RequestBody TipoDocumento td) {
         return ResponseEntity.status(HttpStatus.CREATED).body(tipoDocRepo.save(td));
     }
 
@@ -33,7 +34,7 @@ public class CatalogoController {
     }
 
     @PostMapping("/ubigeo")
-    public ResponseEntity<Ubigeo> crearUbigeo(@RequestBody Ubigeo u) {
+    public ResponseEntity<Ubigeo> crearUbigeo(@Valid @RequestBody Ubigeo u) {
         return ResponseEntity.status(HttpStatus.CREATED).body(ubigeoRepo.save(u));
     }
 }
