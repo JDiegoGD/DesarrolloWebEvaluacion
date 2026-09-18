@@ -10,5 +10,7 @@ public interface AtencionRepository extends JpaRepository<Atencion, Integer> {
 
     List<Atencion> findByPacienteIdPacienteOrderByFechaAtencionDesc(Integer idPaciente);
 
+    List<Atencion> findByPaciente_NumeroDocumentoOrderByFechaAtencionDesc(String numeroDocumento);
+
     long countByPacienteIdPaciente(Integer idPaciente);
 }

@@ -1,10 +1,8 @@
 package com.tecsup.model;
 
 import jakarta.persistence.*;
-import lombok.Data;
 import java.time.LocalDate;
 
-@Data
 @Entity
 @Table(name = "atencion")
 public class Atencion {
@@ -22,4 +20,16 @@ public class Atencion {
 
     @Column(columnDefinition = "TEXT")
     private String motivo;
+
+    public Integer getIdAtencion() { return idAtencion; }
+    public void setIdAtencion(Integer idAtencion) { this.idAtencion = idAtencion; }
+
+    public Paciente getPaciente() { return paciente; }
+    public void setPaciente(Paciente paciente) { this.paciente = paciente; }
+
+    public LocalDate getFechaAtencion() { return fechaAtencion; }
+    public void setFechaAtencion(LocalDate fechaAtencion) { this.fechaAtencion = fechaAtencion; }
+
+    public String getMotivo() { return motivo; }
+    public void setMotivo(String motivo) { this.motivo = motivo; }
 }

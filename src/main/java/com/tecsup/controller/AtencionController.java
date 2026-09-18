@@ -14,16 +14,19 @@ public class AtencionController {
     @Autowired private AtencionService service;
 
     // RF-PAC-07: resumen de atenciones por paciente
-    // GET /api/atenciones/paciente/{id}
-    @GetMapping("/paciente/{idPaciente}")
+    @GetMapping("/paciente/{numeroDocumento}")
     public ResponseEntity<List<Atencion>> listarPorPaciente(
-            @PathVariable Integer idPaciente) {
-        return ResponseEntity.ok(service.listarPorPaciente(idPaciente));
+            @PathVariable String numeroDocumento) {
+        return ResponseEntity.ok(service.listarPorPaciente(numeroDocumento));
     }
 
     @PostMapping
-    public ResponseEntity<Atencion> registrar(@RequestBody Atencion a) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(service.registrar(a));
+    public ResponseEntity<?> registrar(@RequestBody Atencion a) {
+        try {
+            return ResponseEntity.status(HttpStatus.CREATED).body(service.registrar(a));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 
     @GetMapping

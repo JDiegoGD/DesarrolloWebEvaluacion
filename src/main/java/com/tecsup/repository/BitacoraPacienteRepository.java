@@ -8,4 +8,6 @@ import java.util.List;
 @Repository
 public interface BitacoraPacienteRepository extends JpaRepository<BitacoraPaciente, Integer> {
     List<BitacoraPaciente> findByPacienteIdPacienteOrderByFechaHoraDesc(Integer idPaciente);
+
+    List<BitacoraPaciente> findByPaciente_NumeroDocumentoOrderByFechaHoraDesc(String numeroDocumento);
 }

@@ -25,16 +25,20 @@ public class UsuarioController {
         return ResponseEntity.ok(service.listarTodos());
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<?> obtener(@PathVariable Integer id) {
-        return service.obtenerPorId(id)
+    @GetMapping("/{nombreUsuario}")
+    public ResponseEntity<?> obtener(@PathVariable String nombreUsuario) {
+        return service.obtenerPorNombreUsuario(nombreUsuario)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> eliminar(@PathVariable Integer id) {
-        service.eliminar(id);
-        return ResponseEntity.noContent().build();
+    @DeleteMapping("/{nombreUsuario}")
+    public ResponseEntity<?> eliminar(@PathVariable String nombreUsuario) {
+        try {
+            service.eliminar(nombreUsuario);
+            return ResponseEntity.noContent().build();
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 }

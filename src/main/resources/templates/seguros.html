@@ -52,8 +52,8 @@
         <div id="msg"></div>
         <div class="form-grid">
             <div class="form-group">
-                <label>ID Paciente</label>
-                <input type="number" id="idPaciente" placeholder="1">
+                <label>Documento del Paciente</label>
+                <input type="text" id="numDocPaciente" placeholder="DNI, CE, etc.">
             </div>
             <div class="form-group">
                 <label>Tipo Seguro</label>
@@ -100,7 +100,7 @@
     <div class="card">
         <h2>Buscar Seguros por Paciente</h2>
         <div class="search-row">
-            <input type="number" id="buscarId" placeholder="ID del paciente">
+            <input type="text" id="buscarDoc" placeholder="Documento del paciente">
             <button class="btn btn-search" onclick="buscar()">Buscar</button>
         </div>
     </div>
@@ -109,10 +109,10 @@
         <h2>Lista de Seguros</h2>
         <table>
             <thead>
-                <tr><th>ID</th><th>Paciente ID</th><th>Tipo</th><th>Empresa</th><th>Póliza</th><th>Vencimiento</th><th>Estado</th></tr>
+                <tr><th>ID</th><th>Documento Paciente</th><th>Tipo</th><th>Empresa</th><th>Póliza</th><th>Vencimiento</th><th>Estado</th></tr>
             </thead>
             <tbody id="bodySeguros">
-                <tr><td colspan="7" style="text-align:center;color:#888">Busca por ID de paciente</td></tr>
+                <tr><td colspan="7" style="text-align:center;color:#888">Busca por documento de paciente</td></tr>
             </tbody>
         </table>
     </div>
@@ -122,9 +122,9 @@
 const API = 'http://localhost:8080';
 
 async function registrarSeguro() {
-    const idPaciente = document.getElementById('idPaciente').value;
+    const numDoc = document.getElementById('numDocPaciente').value.trim();
     const body = {
-        paciente: { idPaciente: parseInt(idPaciente) },
+        paciente: { numeroDocumento: numDoc },
         tipoSeguro: document.getElementById('tipoSeguro').value,
         empresaAseguradora: document.getElementById('empresa').value,
         numeroPoliza: document.getElementById('poliza').value,
@@ -142,7 +142,7 @@ async function registrarSeguro() {
     if (res.ok) {
         msg.className = 'msg-ok'; msg.style.display = 'block';
         msg.textContent = 'Seguro registrado correctamente.';
-        document.getElementById('buscarId').value = idPaciente;
+        document.getElementById('buscarDoc').value = numDoc;
         buscar();
     } else {
         msg.className = 'msg-err'; msg.style.display = 'block';
@@ -151,10 +151,10 @@ async function registrarSeguro() {
 }
 
 async function buscar() {
-    const id = document.getElementById('buscarId').value;
-    if (!id) return;
+    const doc = document.getElementById('buscarDoc').value.trim();
+    if (!doc) return;
     const tbody = document.getElementById('bodySeguros');
-    const res = await fetch(`${API}/api/seguros/paciente/${id}`);
+    const res = await fetch(`${API}/api/seguros/paciente/${encodeURIComponent(doc)}`);
     if (!res.ok) {
         tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;color:#c5221f">${await res.text()}</td></tr>`;
         return;
@@ -167,7 +167,7 @@ async function buscar() {
     tbody.innerHTML = data.map(s => `
         <tr>
             <td>${s.idSeguroPaciente}</td>
-            <td>${s.paciente?.idPaciente ?? '-'}</td>
+            <td>${s.paciente?.numeroDocumento ?? '-'}</td>
             <td>${s.tipoSeguro}</td>
             <td>${s.empresaAseguradora}</td>
             <td>${s.numeroPoliza}</td>

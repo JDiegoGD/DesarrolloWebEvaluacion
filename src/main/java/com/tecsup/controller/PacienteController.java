@@ -46,30 +46,24 @@ public class PacienteController {
         if (apellidoMaterno != null) return ResponseEntity.ok(pacienteService.buscarPorApellidoMaterno(apellidoMaterno));
         return ResponseEntity.ok(pacienteService.listarTodos());
     }
-    @GetMapping("/{id}")
-    public ResponseEntity<?> obtenerPaciente(@PathVariable Integer id) {
-        return pacienteService.obtenerPacienteCompleto(id)
-                .map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
-    }
     @GetMapping
     public ResponseEntity<List<Paciente>> listarTodos() {
         return ResponseEntity.ok(pacienteService.listarTodos());
     }
 
     // RF-PAC-08: actualizar — INT-4
-    @PutMapping("/{id}")
-    public ResponseEntity<?> actualizarPaciente(@PathVariable Integer id,
-                                                @RequestBody Paciente datos, @RequestParam Integer idUsuario) {
-        try { return ResponseEntity.ok(pacienteService.actualizarPaciente(id, datos, idUsuario)); }
+    @PutMapping("/documento/{numeroDocumento}")
+    public ResponseEntity<?> actualizarPaciente(@PathVariable String numeroDocumento,
+                                                @RequestBody Paciente datos, @RequestParam String nombreUsuario) {
+        try { return ResponseEntity.ok(pacienteService.actualizarPaciente(numeroDocumento, datos, nombreUsuario)); }
         catch (RuntimeException e) { return ResponseEntity.badRequest().body(e.getMessage()); }
     }
 
     // RF-PAC-13: eliminar lógico
-    // DELETE /api/pacientes/{id}
-    @DeleteMapping("/{id}")
-    public ResponseEntity<?> eliminarPaciente(@PathVariable Integer id) {
+    @DeleteMapping("/documento/{numeroDocumento}")
+    public ResponseEntity<?> eliminarPaciente(@PathVariable String numeroDocumento) {
         try {
-            pacienteService.eliminarPaciente(id);
+            pacienteService.eliminarPaciente(numeroDocumento);
             return ResponseEntity.ok("Paciente procesado correctamente.");
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
@@ -77,8 +71,8 @@ public class PacienteController {
     }
 
     // RF-PAC-12: bitácora — INT-6
-    @GetMapping("/{id}/bitacora")
-    public ResponseEntity<List<BitacoraPaciente>> obtenerBitacora(@PathVariable Integer id) {
-        return ResponseEntity.ok(pacienteService.obtenerBitacora(id));
+    @GetMapping("/documento/{numeroDocumento}/bitacora")
+    public ResponseEntity<List<BitacoraPaciente>> obtenerBitacora(@PathVariable String numeroDocumento) {
+        return ResponseEntity.ok(pacienteService.obtenerBitacora(numeroDocumento));
     }
 }

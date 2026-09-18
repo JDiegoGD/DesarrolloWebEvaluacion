@@ -112,7 +112,6 @@
                     <option value="">-- Seleccionar --</option>
                     <option>Masculino</option>
                     <option>Femenino</option>
-                    <option>Otro</option>
                 </select>
                 <span class="err-msg" id="err-sexo"></span>
             </div>
@@ -172,8 +171,8 @@
             </div>
 
             <div class="form-group" id="grupoIdUsuario" style="display:none">
-                <label>ID Usuario que edita *</label>
-                <input type="number" id="idUsuarioEdicion" placeholder="1" min="1">
+                <label>Usuario que edita *</label>
+                <input type="text" id="nombreUsuarioEdicion" placeholder="ej. admin01">
                 <span class="hint">Requerido para registrar el cambio en bitácora</span>
             </div>
 
@@ -197,12 +196,12 @@
         <table>
             <thead>
             <tr>
-                <th>ID</th><th>Código</th><th>Nombres</th>
+                <th>Código</th><th>Nombres</th>
                 <th>Documento</th><th>Edad</th><th>Teléfono</th><th>Estado</th><th>Acciones</th>
             </tr>
             </thead>
             <tbody id="bodyPacientes">
-            <tr><td colspan="8" style="text-align:center;color:#888">Cargando...</td></tr>
+            <tr><td colspan="7" style="text-align:center;color:#888">Cargando...</td></tr>
             </tbody>
         </table>
     </div>
@@ -247,9 +246,9 @@
             select.innerHTML = '<option value="">-- Seleccionar --</option>';
             data.forEach(td => {
                 const opt = document.createElement('option');
-                opt.value = td.idTipoDocumento;
+                opt.value = td.codigo;
                 opt.textContent = td.nombre;
-                opt.dataset.codigo = (td.codigo || '').toUpperCase(); // usa el campo codigo del backend
+                opt.dataset.codigo = (td.codigo || '').toUpperCase();
                 select.appendChild(opt);
             });
         } catch(e) {
@@ -376,7 +375,7 @@
             return;
         }
         const body = {
-            tipoDocumento: { idTipoDocumento: parseInt(document.getElementById('idTipoDoc').value) },
+            tipoDocumento: { codigo: document.getElementById('idTipoDoc').value },
             numeroDocumento: document.getElementById('numDoc').value.trim(),
             nombres: document.getElementById('nombres').value.trim(),
             apellidoPaterno: document.getElementById('apPaterno').value.trim(),
@@ -396,13 +395,13 @@
         try {
             let res, data;
             if (idEnEdicion) {
-                const idUsuario = document.getElementById('idUsuarioEdicion').value;
-                if (!idUsuario) {
+                const nombreUsuario = document.getElementById('nombreUsuarioEdicion').value.trim();
+                if (!nombreUsuario) {
                     msg.className = 'msg-err'; msg.style.display = 'block';
-                    msg.textContent = 'Ingresa el ID de usuario que realiza la edición.';
+                    msg.textContent = 'Ingresa el usuario que realiza la edición.';
                     return;
                 }
-                res = await fetch(`${API}/api/pacientes/${idEnEdicion}?idUsuario=${idUsuario}`, {
+                res = await fetch(`${API}/api/pacientes/documento/${encodeURIComponent(idEnEdicion)}?nombreUsuario=${encodeURIComponent(nombreUsuario)}`, {
                     method: 'PUT',
                     headers: headersConRol(true),
                     body: JSON.stringify(body)
@@ -436,11 +435,11 @@
         } catch(e) { alert('Error de conexión con el servidor'); }
     }
 
-    async function cargarParaEditar(id) {
-        const res = await fetch(`${API}/api/pacientes/${id}`, { headers: headersConRol(false) });
+    async function cargarParaEditar(numeroDocumento) {
+        const res = await fetch(`${API}/api/pacientes/documento/${encodeURIComponent(numeroDocumento)}`, { headers: headersConRol(false) });
         if (!res.ok) return alert('No se pudo cargar el paciente.');
         const p = await res.json();
-        idEnEdicion = id;
+        idEnEdicion = numeroDocumento;
 
         document.getElementById('nombres').value = p.nombres || '';
         document.getElementById('apPaterno').value = p.apellidoPaterno || '';
@@ -457,7 +456,7 @@
         document.getElementById('fechaNac').value = p.fechaNacimiento || '';
         document.getElementById('sexo').value = p.sexo || '';
         document.getElementById('tipoSangre').value = p.tipoSangre || '';
-        if (p.tipoDocumento) document.getElementById('idTipoDoc').value = p.tipoDocumento.idTipoDocumento;
+        if (p.tipoDocumento) document.getElementById('idTipoDoc').value = p.tipoDocumento.codigo;
         ['numDoc','fechaNac','sexo','tipoSangre','idTipoDoc'].forEach(id => document.getElementById(id).disabled = true);
 
         document.getElementById('grupoEstado').style.display = 'flex';
@@ -472,7 +471,7 @@
     function cancelarEdicion() {
         idEnEdicion = null;
         ['idTipoDoc','numDoc','nombres','apPaterno','apMaterno','fechaNac','sexo','telefono',
-         'correo','direccion','ocupacion','tipoSangre','estadoCivil','idUsuarioEdicion']
+         'correo','direccion','ocupacion','tipoSangre','estadoCivil','nombreUsuarioEdicion']
             .forEach(id => document.getElementById(id).value = '');
         ['numDoc','fechaNac','sexo','tipoSangre','idTipoDoc'].forEach(id => document.getElementById(id).disabled = false);
         document.getElementById('grupoEstado').style.display = 'none';
@@ -483,10 +482,10 @@
         document.getElementById('msg').style.display = 'none';
     }
 
-    async function eliminarPaciente(id) {
+    async function eliminarPaciente(numeroDocumento) {
         if (!confirm('¿Seguro que deseas eliminar/desactivar este paciente?')) return;
         try {
-            const res = await fetch(`${API}/api/pacientes/${id}`, { method: 'DELETE', headers: headersConRol(false) });
+            const res = await fetch(`${API}/api/pacientes/documento/${encodeURIComponent(numeroDocumento)}`, { method: 'DELETE', headers: headersConRol(false) });
             const texto = await res.text();
             const msg = document.getElementById('msg');
             if (res.ok) {
@@ -535,12 +534,11 @@
     function renderTabla(lista) {
         const tbody = document.getElementById('bodyPacientes');
         if (!lista || lista.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#888">Sin resultados</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#888">Sin resultados</td></tr>';
             return;
         }
         tbody.innerHTML = lista.map(p => `
             <tr>
-                <td>${p.idPaciente}</td>
                 <td><b>${p.codigoPaciente}</b></td>
                 <td>${p.nombres} ${p.apellidoPaterno} ${p.apellidoMaterno}</td>
                 <td>${p.numeroDocumento}</td>
@@ -548,8 +546,8 @@
                 <td>${p.telefono ?? '-'}</td>
                 <td><span class="badge badge-${p.estado?.toLowerCase()}">${p.estado}</span></td>
                 <td>
-                    <button class="btn btn-primary" style="padding:4px 10px;font-size:12px" onclick="cargarParaEditar(${p.idPaciente})">Editar</button>
-                    <button class="btn" style="padding:4px 10px;font-size:12px;background:#e53935;color:white" onclick="eliminarPaciente(${p.idPaciente})">Eliminar</button>
+                    <button class="btn btn-primary" style="padding:4px 10px;font-size:12px" onclick="cargarParaEditar('${p.numeroDocumento}')">Editar</button>
+                    <button class="btn" style="padding:4px 10px;font-size:12px;background:#e53935;color:white" onclick="eliminarPaciente('${p.numeroDocumento}')">Eliminar</button>
                 </td>
             </tr>
         `).join('');

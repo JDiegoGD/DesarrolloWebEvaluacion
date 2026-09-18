@@ -1,9 +1,7 @@
 package com.tecsup.model;
 
 import jakarta.persistence.*;
-import lombok.Data;
 
-@Data
 @Entity
 @Table(name = "ubigeo")
 public class Ubigeo {
@@ -15,4 +13,16 @@ public class Ubigeo {
     @Column(nullable = false, length = 100) private String distrito;
     @Column(nullable = false, length = 100) private String provincia;
     @Column(nullable = false, length = 100) private String departamento;
+
+    public Integer getIdUbigeo() { return idUbigeo; }
+    public void setIdUbigeo(Integer idUbigeo) { this.idUbigeo = idUbigeo; }
+
+    public String getDistrito() { return distrito; }
+    public void setDistrito(String distrito) { this.distrito = distrito; }
+
+    public String getProvincia() { return provincia; }
+    public void setProvincia(String provincia) { this.provincia = provincia; }
+
+    public String getDepartamento() { return departamento; }
+    public void setDepartamento(String departamento) { this.departamento = departamento; }
 }

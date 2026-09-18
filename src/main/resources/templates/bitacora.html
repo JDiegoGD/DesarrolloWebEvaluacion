@@ -50,7 +50,7 @@
     <div class="card">
         <h2>Consultar Bitácora de Modificaciones</h2>
         <div class="search-row">
-            <input type="number" id="idPaciente" placeholder="ID del paciente">
+            <input type="text" id="docPaciente" placeholder="Documento del paciente">
             <button class="btn btn-search" onclick="buscar()">Ver Bitácora</button>
         </div>
     </div>
@@ -70,7 +70,7 @@
                 </tr>
             </thead>
             <tbody id="bodyBitacora">
-                <tr><td colspan="7" style="text-align:center;color:#888">Ingresa el ID del paciente para ver su historial</td></tr>
+                <tr><td colspan="7" style="text-align:center;color:#888">Ingresa el documento del paciente para ver su historial</td></tr>
             </tbody>
         </table>
     </div>
@@ -87,10 +87,10 @@ function cambiarRol() {
 }
 
 async function buscar() {
-    const id = document.getElementById('idPaciente').value;
-    if (!id) return;
+    const doc = document.getElementById('docPaciente').value.trim();
+    if (!doc) return;
     const tbody = document.getElementById('bodyBitacora');
-    const res = await fetch(`${API}/api/pacientes/${id}/bitacora`, { headers: { 'X-Rol': rolActual() } });
+    const res = await fetch(`${API}/api/pacientes/documento/${encodeURIComponent(doc)}/bitacora`, { headers: { 'X-Rol': rolActual() } });
     if (!res.ok) {
         tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;color:#c5221f">${await res.text()}</td></tr>`;
         return;

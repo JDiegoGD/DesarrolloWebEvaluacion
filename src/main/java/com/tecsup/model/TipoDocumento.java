@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import java.util.List;
 
+
 @Entity
 @Table(name = "tipo_documento")
 public class TipoDocumento {
@@ -22,6 +23,7 @@ public class TipoDocumento {
     @OneToMany(mappedBy = "tipoDocumento")
     private List<Paciente> pacientes;
 
+    @JsonIgnore
     public Integer getIdTipoDocumento() { return idTipoDocumento; }
     public void setIdTipoDocumento(Integer idTipoDocumento) { this.idTipoDocumento = idTipoDocumento; }
 

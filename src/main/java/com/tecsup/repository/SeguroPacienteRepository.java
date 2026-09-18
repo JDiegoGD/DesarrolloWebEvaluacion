@@ -8,4 +8,6 @@ import java.util.List;
 @Repository
 public interface SeguroPacienteRepository extends JpaRepository<SeguroPaciente, Integer> {
     List<SeguroPaciente> findByPacienteIdPaciente(Integer idPaciente);
+
+    List<SeguroPaciente> findByPaciente_NumeroDocumento(String numeroDocumento);
 }

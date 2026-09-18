@@ -2,9 +2,11 @@ package com.tecsup.service;
 
 import com.tecsup.model.Paciente;
 import com.tecsup.model.BitacoraPaciente;
+import com.tecsup.model.TipoDocumento;
 import com.tecsup.model.Usuario;
 import com.tecsup.repository.PacienteRepository;
 import com.tecsup.repository.BitacoraPacienteRepository;
+import com.tecsup.repository.TipoDocumentoRepository;
 import com.tecsup.repository.UsuarioRepository;
 import com.tecsup.repository.AtencionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,14 +23,25 @@ public class PacienteService {
     @Autowired private BitacoraPacienteRepository bitacoraRepository;
     @Autowired private UsuarioRepository usuarioRepository;
     @Autowired private AtencionRepository atencionRepository;
+    @Autowired private TipoDocumentoRepository tipoDocumentoRepository;
 
     // RF-PAC-01 + RF-PAC-02
     public Paciente registrarPaciente(Paciente paciente) {
         if (pacienteRepository.existsByNumeroDocumento(paciente.getNumeroDocumento()))
             throw new RuntimeException("El número de documento ya está registrado.");
+        if (paciente.getTipoDocumento() == null || paciente.getTipoDocumento().getCodigo() == null)
+            throw new RuntimeException("Debes indicar el código del tipo de documento.");
+        TipoDocumento tipoDocumento = tipoDocumentoRepository.findByCodigo(paciente.getTipoDocumento().getCodigo())
+                .orElseThrow(() -> new RuntimeException("Tipo de documento no reconocido: " + paciente.getTipoDocumento().getCodigo()));
+        paciente.setTipoDocumento(tipoDocumento);
         paciente.setCodigoPaciente(generarCodigo());
         paciente.setEstado("Activo");
         return pacienteRepository.save(paciente);
+    }
+
+    private Paciente obtenerEntidadPorDocumento(String numeroDocumento) {
+        return pacienteRepository.findByNumeroDocumento(numeroDocumento)
+                .orElseThrow(() -> new RuntimeException("Paciente no encontrado (documento " + numeroDocumento + ")."));
     }
 
     // RF-PAC-03
@@ -61,18 +74,14 @@ public class PacienteService {
     }
 
     // RF-PAC-06
-    public Optional<Paciente> obtenerPacienteCompleto(Integer id) {
-        return pacienteRepository.findById(id);
-    }
     public List<Paciente> listarTodos() {
         return pacienteRepository.findAll();
     }
 
     // RF-PAC-08
-    public Paciente actualizarPaciente(Integer id, Paciente datos, Integer idUsuario) {
-        Paciente e = pacienteRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Paciente no encontrado."));
-        Usuario u = usuarioRepository.findById(idUsuario)
+    public Paciente actualizarPaciente(String numeroDocumento, Paciente datos, String nombreUsuario) {
+        Paciente e = obtenerEntidadPorDocumento(numeroDocumento);
+        Usuario u = usuarioRepository.findByNombreUsuario(nombreUsuario)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado."));
         registrarBitacora(e, u, "nombres", e.getNombres(), datos.getNombres());
         registrarBitacora(e, u, "telefono", e.getTelefono(), datos.getTelefono());
@@ -92,10 +101,9 @@ public class PacienteService {
     }
 
     // RF-PAC-13: eliminación lógica sin lazy loading
-    public void eliminarPaciente(Integer id) {
-        Paciente p = pacienteRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Paciente no encontrado."));
-        long cantidadAtenciones = atencionRepository.countByPacienteIdPaciente(id);
+    public void eliminarPaciente(String numeroDocumento) {
+        Paciente p = obtenerEntidadPorDocumento(numeroDocumento);
+        long cantidadAtenciones = atencionRepository.countByPacienteIdPaciente(p.getIdPaciente());
         if (cantidadAtenciones > 0) {
             p.setEstado("Inactivo");
             pacienteRepository.save(p);
@@ -119,8 +127,8 @@ public class PacienteService {
         bitacoraRepository.save(log);
     }
 
-    public List<BitacoraPaciente> obtenerBitacora(Integer idPaciente) {
+    public List<BitacoraPaciente> obtenerBitacora(String numeroDocumento) {
         return bitacoraRepository
-                .findByPacienteIdPacienteOrderByFechaHoraDesc(idPaciente);
+                .findByPaciente_NumeroDocumentoOrderByFechaHoraDesc(numeroDocumento);
     }
 }

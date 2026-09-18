@@ -14,13 +14,17 @@ public class SeguroPacienteController {
     @Autowired private SeguroPacienteService service;
 
     @PostMapping
-    public ResponseEntity<SeguroPaciente> registrar(@RequestBody SeguroPaciente s) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(service.registrar(s));
+    public ResponseEntity<?> registrar(@RequestBody SeguroPaciente s) {
+        try {
+            return ResponseEntity.status(HttpStatus.CREATED).body(service.registrar(s));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 
-    @GetMapping("/paciente/{id}")
-    public ResponseEntity<List<SeguroPaciente>> listar(@PathVariable Integer id) {
-        return ResponseEntity.ok(service.listarPorPaciente(id));
+    @GetMapping("/paciente/{numeroDocumento}")
+    public ResponseEntity<List<SeguroPaciente>> listar(@PathVariable String numeroDocumento) {
+        return ResponseEntity.ok(service.listarPorPaciente(numeroDocumento));
     }
 
     @PutMapping("/{id}")

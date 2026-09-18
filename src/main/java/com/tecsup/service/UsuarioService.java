@@ -20,9 +20,13 @@ public class UsuarioService {
         return repository.findByRol(rol);
     }
 
-    public Optional<Usuario> obtenerPorId(Integer id) {
-        return repository.findById(id);
+    public Optional<Usuario> obtenerPorNombreUsuario(String nombreUsuario) {
+        return repository.findByNombreUsuario(nombreUsuario);
     }
 
-    public void eliminar(Integer id) { repository.deleteById(id); }
+    public void eliminar(String nombreUsuario) {
+        Usuario u = repository.findByNombreUsuario(nombreUsuario)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado."));
+        repository.delete(u);
+    }
 }
