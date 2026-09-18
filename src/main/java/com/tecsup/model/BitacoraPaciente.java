@@ -1,5 +1,6 @@
 package com.tecsup.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
@@ -35,6 +36,7 @@ public class BitacoraPaciente {
     private String valorNuevo;
 
     // Getters y Setters
+    @JsonIgnore
     public Integer getIdBitacora() { return idBitacora; }
     public void setIdBitacora(Integer idBitacora) { this.idBitacora = idBitacora; }
 

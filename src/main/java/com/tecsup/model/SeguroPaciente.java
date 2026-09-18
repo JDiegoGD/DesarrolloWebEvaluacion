@@ -1,5 +1,6 @@
 package com.tecsup.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import java.time.LocalDate;
 
@@ -23,6 +24,7 @@ public class SeguroPaciente {
     private LocalDate fechaVencimiento;
     @Column(length = 20)  private String estadoCobertura;
 
+    @JsonIgnore
     public Integer getIdSeguroPaciente() { return idSeguroPaciente; }
     public void setIdSeguroPaciente(Integer id) { this.idSeguroPaciente = id; }
 

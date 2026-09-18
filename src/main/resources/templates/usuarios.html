@@ -99,17 +99,17 @@
         <h2>Lista de Usuarios</h2>
         <table>
             <thead>
-                <tr><th>Usuario</th><th>Rol</th></tr>
+                <tr><th>Usuario</th><th>Rol</th><th>Acciones</th></tr>
             </thead>
             <tbody id="bodyUsuarios">
-                <tr><td colspan="2" style="text-align:center;color:#888">Cargando...</td></tr>
+                <tr><td colspan="3" style="text-align:center;color:#888">Cargando...</td></tr>
             </tbody>
         </table>
     </div>
 </div>
 
 <script>
-const API = 'http://localhost:8080';
+const API = 'http://localhost:8089';
 
 function rolActual() {
     return localStorage.getItem('sesionRol') || 'ADMIN';
@@ -160,16 +160,30 @@ async function filtrar() {
     renderTabla(data);
 }
 
+async function eliminarUsuario(nombreUsuario) {
+    if (!confirm(`¿Eliminar al usuario "${nombreUsuario}"?`)) return;
+    const res = await fetch(`${API}/api/usuarios/${encodeURIComponent(nombreUsuario)}`, {
+        method: 'DELETE',
+        headers: headersConRol(false)
+    });
+    if (res.ok) {
+        listarTodos();
+    } else {
+        alert(await res.text() || 'Error al eliminar usuario.');
+    }
+}
+
 function renderTabla(lista) {
     const tbody = document.getElementById('bodyUsuarios');
     if (!lista.length) {
-        tbody.innerHTML = '<tr><td colspan="2" style="text-align:center;color:#888">Sin resultados</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;color:#888">Sin resultados</td></tr>';
         return;
     }
     tbody.innerHTML = lista.map(u => `
         <tr>
             <td>${u.nombreUsuario}</td>
             <td><span class="badge badge-${u.rol?.toLowerCase()}">${u.rol}</span></td>
+            <td><button class="btn" style="padding:4px 10px;font-size:12px;background:#e53935;color:white" onclick="eliminarUsuario('${u.nombreUsuario}')">Eliminar</button></td>
         </tr>
     `).join('');
 }

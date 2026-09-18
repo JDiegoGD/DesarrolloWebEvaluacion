@@ -93,17 +93,17 @@
         <h2>Lista de Contactos</h2>
         <table>
             <thead>
-                <tr><th>ID</th><th>Nombre</th><th>Parentesco</th><th>Teléfono</th><th>Correo</th><th>Principal</th></tr>
+                <tr><th>Nombre</th><th>Parentesco</th><th>Teléfono</th><th>Correo</th><th>Principal</th></tr>
             </thead>
             <tbody id="bodyContactos">
-                <tr><td colspan="6" style="text-align:center;color:#888">Busca por ID de paciente</td></tr>
+                <tr><td colspan="5" style="text-align:center;color:#888">Busca por documento de paciente</td></tr>
             </tbody>
         </table>
     </div>
 </div>
 
 <script>
-const API = 'http://localhost:8080';
+const API = 'http://localhost:8089';
 
 async function registrarContacto() {
     const numDoc = document.getElementById('numDocPaciente').value.trim();
@@ -139,17 +139,16 @@ async function buscar() {
     const tbody = document.getElementById('bodyContactos');
     const res = await fetch(`${API}/api/contactos-emergencia/paciente/${encodeURIComponent(doc)}`);
     if (!res.ok) {
-        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:#c5221f">${await res.text()}</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:#c5221f">${await res.text()}</td></tr>`;
         return;
     }
     const data = await res.json();
     if (!data.length) {
-        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#888">Sin resultados</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#888">Sin resultados</td></tr>';
         return;
     }
     tbody.innerHTML = data.map(c => `
         <tr>
-            <td>${c.idContacto}</td>
             <td>${c.nombreCompleto}</td>
             <td>${c.parentesco ?? '-'}</td>
             <td>${c.telefono ?? '-'}</td>

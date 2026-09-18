@@ -1,5 +1,6 @@
 package com.tecsup.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 @Entity
@@ -25,6 +26,7 @@ public class ContactoEmergencia {
     @Column(nullable = false)
     private boolean esPrincipal = false;
 
+    @JsonIgnore
     public Integer getIdContacto() { return idContacto; }
     public void setIdContacto(Integer idContacto) { this.idContacto = idContacto; }
 

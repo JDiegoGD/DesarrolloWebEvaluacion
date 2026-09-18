@@ -80,21 +80,20 @@
         <table>
             <thead>
                 <tr>
-                    <th>ID</th>
                     <th>Paciente</th>
                     <th>Fecha</th>
                     <th>Motivo</th>
                 </tr>
             </thead>
             <tbody id="bodyAtenciones">
-                <tr><td colspan="4" style="text-align:center;color:#888">Cargando...</td></tr>
+                <tr><td colspan="3" style="text-align:center;color:#888">Cargando...</td></tr>
             </tbody>
         </table>
     </div>
 </div>
 
 <script>
-const API = 'http://localhost:8080';
+const API = 'http://localhost:8089';
 
 async function registrarAtencion() {
     const body = {
@@ -137,12 +136,11 @@ async function buscarPorPaciente() {
 function renderTabla(lista) {
     const tbody = document.getElementById('bodyAtenciones');
     if (!lista || lista.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#888">Sin resultados</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;color:#888">Sin resultados</td></tr>';
         return;
     }
     tbody.innerHTML = lista.map(a => `
         <tr>
-            <td>${a.idAtencion}</td>
             <td>${a.paciente?.nombres ?? ''} ${a.paciente?.apellidoPaterno ?? ''} (Doc: ${a.paciente?.numeroDocumento ?? '-'})</td>
             <td>${a.fechaAtencion}</td>
             <td>${a.motivo ?? '-'}</td>

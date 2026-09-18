@@ -60,7 +60,6 @@
         <table>
             <thead>
                 <tr>
-                    <th>ID</th>
                     <th>Fecha y Hora</th>
                     <th>Usuario</th>
                     <th>Acción</th>
@@ -70,14 +69,14 @@
                 </tr>
             </thead>
             <tbody id="bodyBitacora">
-                <tr><td colspan="7" style="text-align:center;color:#888">Ingresa el documento del paciente para ver su historial</td></tr>
+                <tr><td colspan="6" style="text-align:center;color:#888">Ingresa el documento del paciente para ver su historial</td></tr>
             </tbody>
         </table>
     </div>
 </div>
 
 <script>
-const API = 'http://localhost:8080';
+const API = 'http://localhost:8089';
 
 function rolActual() {
     return localStorage.getItem('sesionRol') || 'ADMIN';
@@ -92,17 +91,16 @@ async function buscar() {
     const tbody = document.getElementById('bodyBitacora');
     const res = await fetch(`${API}/api/pacientes/documento/${encodeURIComponent(doc)}/bitacora`, { headers: { 'X-Rol': rolActual() } });
     if (!res.ok) {
-        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;color:#c5221f">${await res.text()}</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:#c5221f">${await res.text()}</td></tr>`;
         return;
     }
     const data = await res.json();
     if (!data.length) {
-        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#888">Sin registros en bitácora</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#888">Sin registros en bitácora</td></tr>';
         return;
     }
     tbody.innerHTML = data.map(b => `
         <tr>
-            <td>${b.idBitacora}</td>
             <td>${b.fechaHora?.replace('T', ' ').substring(0, 19) ?? '-'}</td>
             <td>${b.usuario?.nombreUsuario ?? '-'} (${b.usuario?.rol ?? '-'})</td>
             <td>${b.accion}</td>

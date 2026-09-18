@@ -1,5 +1,6 @@
 package com.tecsup.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import java.time.LocalDate;
 
@@ -21,6 +22,7 @@ public class Atencion {
     @Column(columnDefinition = "TEXT")
     private String motivo;
 
+    @JsonIgnore
     public Integer getIdAtencion() { return idAtencion; }
     public void setIdAtencion(Integer idAtencion) { this.idAtencion = idAtencion; }
 
