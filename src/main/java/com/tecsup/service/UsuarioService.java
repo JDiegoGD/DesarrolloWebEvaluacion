@@ -12,7 +12,11 @@ public class UsuarioService {
 
     @Autowired private UsuarioRepository repository;
 
-    public Usuario registrar(Usuario u) { return repository.save(u); }
+    public Usuario registrar(Usuario u) {
+        if (repository.findByNombreUsuario(u.getNombreUsuario()).isPresent())
+            throw new RuntimeException("El nombre de usuario ya existe.");
+        return repository.save(u);
+    }
 
     public List<Usuario> listarTodos() { return repository.findAll(); }
 

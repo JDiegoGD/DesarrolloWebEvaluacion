@@ -29,6 +29,12 @@ public class PacienteService {
     public Paciente registrarPaciente(Paciente paciente) {
         if (pacienteRepository.existsByNumeroDocumento(paciente.getNumeroDocumento()))
             throw new RuntimeException("El número de documento ya está registrado.");
+        if (paciente.getCorreoElectronico() != null && !paciente.getCorreoElectronico().isBlank()
+                && pacienteRepository.existsByCorreoElectronico(paciente.getCorreoElectronico()))
+            throw new RuntimeException("El correo electrónico ya está registrado.");
+        if (paciente.getTelefono() != null && !paciente.getTelefono().isBlank()
+                && pacienteRepository.existsByTelefono(paciente.getTelefono()))
+            throw new RuntimeException("El teléfono ya está registrado.");
         if (paciente.getTipoDocumento() == null || paciente.getTipoDocumento().getCodigo() == null)
             throw new RuntimeException("Debes indicar el código del tipo de documento.");
         TipoDocumento tipoDocumento = tipoDocumentoRepository.findByCodigo(paciente.getTipoDocumento().getCodigo())
@@ -83,6 +89,17 @@ public class PacienteService {
         Paciente e = obtenerEntidadPorDocumento(numeroDocumento);
         Usuario u = usuarioRepository.findByNombreUsuario(nombreUsuario)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado."));
+
+        String correoNuevo = datos.getCorreoElectronico();
+        if (correoNuevo != null && !correoNuevo.isBlank() && !correoNuevo.equals(e.getCorreoElectronico())
+                && pacienteRepository.existsByCorreoElectronico(correoNuevo))
+            throw new RuntimeException("El correo electrónico ya está registrado por otro paciente.");
+
+        String telefonoNuevo = datos.getTelefono();
+        if (telefonoNuevo != null && !telefonoNuevo.isBlank() && !telefonoNuevo.equals(e.getTelefono())
+                && pacienteRepository.existsByTelefono(telefonoNuevo))
+            throw new RuntimeException("El teléfono ya está registrado por otro paciente.");
+
         registrarBitacora(e, u, "nombres", e.getNombres(), datos.getNombres());
         registrarBitacora(e, u, "telefono", e.getTelefono(), datos.getTelefono());
         registrarBitacora(e, u, "correoElectronico", e.getCorreoElectronico(), datos.getCorreoElectronico());

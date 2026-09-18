@@ -10,6 +10,8 @@ import java.util.Optional;
 public interface PacienteRepository extends JpaRepository<Paciente, Integer> {
 
     boolean existsByNumeroDocumento(String numeroDocumento);
+    boolean existsByCorreoElectronico(String correoElectronico);
+    boolean existsByTelefono(String telefono);
     Optional<Paciente> findByCodigoPaciente(String codigoPaciente);
     Optional<Paciente> findByNumeroDocumento(String numeroDocumento);
     List<Paciente> findByNombresContainingIgnoreCase(String nombres);

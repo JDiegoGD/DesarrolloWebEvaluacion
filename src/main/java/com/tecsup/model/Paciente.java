@@ -58,8 +58,8 @@ public class Paciente {
     private String sexo;
 
     @Column(length = 30)  private String estadoCivil;
-    @Column(length = 20)  private String telefono;
-    @Column(length = 100) private String correoElectronico;
+    @Column(unique = true, length = 20)  private String telefono;
+    @Column(unique = true, length = 100) private String correoElectronico;
     @Column(length = 200) private String direccion;
 
     @ManyToOne
