@@ -153,9 +153,25 @@
                 </select>
             </div>
 
+            <div class="form-group" id="grupoEstado" style="display:none">
+                <label>Estado</label>
+                <select id="estado">
+                    <option>Activo</option>
+                    <option>Inactivo</option>
+                    <option>Fallecido</option>
+                </select>
+            </div>
+
+            <div class="form-group" id="grupoIdUsuario" style="display:none">
+                <label>ID Usuario que edita *</label>
+                <input type="number" id="idUsuarioEdicion" placeholder="1" min="1">
+                <span class="hint">Requerido para registrar el cambio en bitácora</span>
+            </div>
+
         </div>
         <br>
-        <button class="btn btn-primary" onclick="registrarPaciente()">Registrar Paciente</button>
+        <button class="btn btn-primary" id="btnGuardar" onclick="guardarPaciente()">Registrar Paciente</button>
+        <button class="btn" id="btnCancelar" style="display:none;background:#888;color:white" onclick="cancelarEdicion()">Cancelar</button>
     </div>
 
     <div class="card">
@@ -173,11 +189,11 @@
             <thead>
             <tr>
                 <th>ID</th><th>Código</th><th>Nombres</th>
-                <th>Documento</th><th>Edad</th><th>Teléfono</th><th>Estado</th>
+                <th>Documento</th><th>Edad</th><th>Teléfono</th><th>Estado</th><th>Acciones</th>
             </tr>
             </thead>
             <tbody id="bodyPacientes">
-            <tr><td colspan="7" style="text-align:center;color:#888">Cargando...</td></tr>
+            <tr><td colspan="8" style="text-align:center;color:#888">Cargando...</td></tr>
             </tbody>
         </table>
     </div>
@@ -196,6 +212,7 @@
     };
 
     let tipoDocActual = '';
+    let idEnEdicion = null;
 
     async function cargarTiposDocumento() {
         try {
@@ -326,7 +343,7 @@
         return ok;
     }
 
-    async function registrarPaciente() {
+    async function guardarPaciente() {
         if (!validarTodo()) {
             const msg = document.getElementById('msg');
             msg.className = 'msg-err'; msg.style.display = 'block';
@@ -347,23 +364,113 @@
             ocupacion: document.getElementById('ocupacion').value.trim(),
             tipoSangre: document.getElementById('tipoSangre').value,
             estadoCivil: document.getElementById('estadoCivil').value,
+            estado: document.getElementById('estado').value,
             ubigeo: { idUbigeo: 1 }
         };
+        const msg = document.getElementById('msg');
         try {
-            const res = await fetch(`${API}/api/pacientes`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(body)
-            });
-            const data = await res.json();
+            let res, data;
+            if (idEnEdicion) {
+                const idUsuario = document.getElementById('idUsuarioEdicion').value;
+                if (!idUsuario) {
+                    msg.className = 'msg-err'; msg.style.display = 'block';
+                    msg.textContent = 'Ingresa el ID de usuario que realiza la edición.';
+                    return;
+                }
+                res = await fetch(`${API}/api/pacientes/${idEnEdicion}?idUsuario=${idUsuario}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body)
+                });
+                data = await res.json().catch(() => null);
+                if (res.ok) {
+                    msg.className = 'msg-ok'; msg.style.display = 'block';
+                    msg.textContent = 'Paciente actualizado correctamente.';
+                    cancelarEdicion();
+                    listarTodos();
+                } else {
+                    msg.className = 'msg-err'; msg.style.display = 'block';
+                    msg.textContent = typeof data === 'string' ? data : 'Error al actualizar paciente.';
+                }
+            } else {
+                res = await fetch(`${API}/api/pacientes`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body)
+                });
+                data = await res.json();
+                if (res.ok) {
+                    msg.className = 'msg-ok'; msg.style.display = 'block';
+                    msg.textContent = `Paciente registrado con código: ${data.codigoPaciente}`;
+                    listarTodos();
+                } else {
+                    msg.className = 'msg-err'; msg.style.display = 'block';
+                    msg.textContent = typeof data === 'string' ? data : 'Error al registrar paciente.';
+                }
+            }
+        } catch(e) { alert('Error de conexión con el servidor'); }
+    }
+
+    async function cargarParaEditar(id) {
+        const res = await fetch(`${API}/api/pacientes/${id}`);
+        if (!res.ok) return alert('No se pudo cargar el paciente.');
+        const p = await res.json();
+        idEnEdicion = id;
+
+        document.getElementById('nombres').value = p.nombres || '';
+        document.getElementById('apPaterno').value = p.apellidoPaterno || '';
+        document.getElementById('apMaterno').value = p.apellidoMaterno || '';
+        document.getElementById('telefono').value = p.telefono || '';
+        document.getElementById('correo').value = p.correoElectronico || '';
+        document.getElementById('direccion').value = p.direccion || '';
+        document.getElementById('ocupacion').value = p.ocupacion || '';
+        document.getElementById('estadoCivil').value = p.estadoCivil || '';
+        document.getElementById('estado').value = p.estado || 'Activo';
+
+        // Campos que el backend no permite modificar en la actualización: se muestran solo de referencia
+        document.getElementById('numDoc').value = p.numeroDocumento || '';
+        document.getElementById('fechaNac').value = p.fechaNacimiento || '';
+        document.getElementById('sexo').value = p.sexo || '';
+        document.getElementById('tipoSangre').value = p.tipoSangre || '';
+        if (p.tipoDocumento) document.getElementById('idTipoDoc').value = p.tipoDocumento.idTipoDocumento;
+        ['numDoc','fechaNac','sexo','tipoSangre','idTipoDoc'].forEach(id => document.getElementById(id).disabled = true);
+
+        document.getElementById('grupoEstado').style.display = 'flex';
+        document.getElementById('grupoIdUsuario').style.display = 'flex';
+        document.getElementById('btnGuardar').textContent = 'Actualizar Paciente';
+        document.getElementById('btnCancelar').style.display = 'inline-block';
+        document.querySelector('.card h2').textContent = `Editando Paciente: ${p.codigoPaciente}`;
+        document.getElementById('msg').style.display = 'none';
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function cancelarEdicion() {
+        idEnEdicion = null;
+        ['idTipoDoc','numDoc','nombres','apPaterno','apMaterno','fechaNac','sexo','telefono',
+         'correo','direccion','ocupacion','tipoSangre','estadoCivil','idUsuarioEdicion']
+            .forEach(id => document.getElementById(id).value = '');
+        ['numDoc','fechaNac','sexo','tipoSangre','idTipoDoc'].forEach(id => document.getElementById(id).disabled = false);
+        document.getElementById('grupoEstado').style.display = 'none';
+        document.getElementById('grupoIdUsuario').style.display = 'none';
+        document.getElementById('btnGuardar').textContent = 'Registrar Paciente';
+        document.getElementById('btnCancelar').style.display = 'none';
+        document.querySelector('.card h2').textContent = 'Registrar Paciente';
+        document.getElementById('msg').style.display = 'none';
+    }
+
+    async function eliminarPaciente(id) {
+        if (!confirm('¿Seguro que deseas eliminar/desactivar este paciente?')) return;
+        try {
+            const res = await fetch(`${API}/api/pacientes/${id}`, { method: 'DELETE' });
+            const texto = await res.text();
             const msg = document.getElementById('msg');
             if (res.ok) {
                 msg.className = 'msg-ok'; msg.style.display = 'block';
-                msg.textContent = `Paciente registrado con código: ${data.codigoPaciente}`;
+                msg.textContent = texto || 'Paciente procesado correctamente.';
                 listarTodos();
             } else {
                 msg.className = 'msg-err'; msg.style.display = 'block';
-                msg.textContent = typeof data === 'string' ? data : 'Error al registrar paciente.';
+                msg.textContent = texto || 'Error al eliminar paciente.';
             }
         } catch(e) { alert('Error de conexión con el servidor'); }
     }
@@ -389,7 +496,7 @@
     function renderTabla(lista) {
         const tbody = document.getElementById('bodyPacientes');
         if (!lista || lista.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#888">Sin resultados</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#888">Sin resultados</td></tr>';
             return;
         }
         tbody.innerHTML = lista.map(p => `
@@ -401,6 +508,10 @@
                 <td>${p.edad ?? '-'}</td>
                 <td>${p.telefono ?? '-'}</td>
                 <td><span class="badge badge-${p.estado?.toLowerCase()}">${p.estado}</span></td>
+                <td>
+                    <button class="btn btn-primary" style="padding:4px 10px;font-size:12px" onclick="cargarParaEditar(${p.idPaciente})">Editar</button>
+                    <button class="btn" style="padding:4px 10px;font-size:12px;background:#e53935;color:white" onclick="eliminarPaciente(${p.idPaciente})">Eliminar</button>
+                </td>
             </tr>
         `).join('');
     }
