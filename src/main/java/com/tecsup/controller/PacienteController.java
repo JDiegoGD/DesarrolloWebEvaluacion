@@ -52,7 +52,7 @@ public class PacienteController {
         return ResponseEntity.ok(pacienteService.listarTodos());
     }
 
-    // RF-PAC-08: actualizar — INT-4
+    // RF-PAC-08: actualizar
     @PutMapping("/documento/{numeroDocumento}")
     public ResponseEntity<?> actualizarPaciente(@PathVariable String numeroDocumento,
                                                 @RequestBody Paciente datos, @RequestParam String nombreUsuario) {

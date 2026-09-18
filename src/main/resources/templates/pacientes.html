@@ -38,6 +38,11 @@
         .msg-ok{background:#e6f4ea;color:#2d8f47}
         .msg-err{background:#fce8e6;color:#c5221f}
         .hint{font-size:11px;color:#888;margin-top:2px}
+        .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);align-items:center;justify-content:center;z-index:100}
+        .modal-overlay.abierto{display:flex}
+        .modal-box{background:white;border-radius:12px;padding:24px;width:min(700px,92vw);max-height:85vh;overflow-y:auto}
+        .modal-box h2{display:flex;justify-content:space-between;align-items:center}
+        .btn-cerrar{background:#888;color:white;padding:6px 14px;font-size:13px}
     </style>
 </head>
 <body>
@@ -202,6 +207,23 @@
             </thead>
             <tbody id="bodyPacientes">
             <tr><td colspan="7" style="text-align:center;color:#888">Cargando...</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="modal-overlay" id="modalHistorial">
+    <div class="modal-box">
+        <h2>
+            <span id="tituloHistorial">Historial de Atenciones</span>
+            <button class="btn btn-cerrar" onclick="cerrarHistorial()">Cerrar</button>
+        </h2>
+        <table>
+            <thead>
+                <tr><th>Fecha</th><th>Motivo</th></tr>
+            </thead>
+            <tbody id="bodyHistorial">
+                <tr><td colspan="2" style="text-align:center;color:#888">Cargando...</td></tr>
             </tbody>
         </table>
     </div>
@@ -546,11 +568,40 @@
                 <td>${p.telefono ?? '-'}</td>
                 <td><span class="badge badge-${p.estado?.toLowerCase()}">${p.estado}</span></td>
                 <td>
+                    <button class="btn" style="padding:4px 10px;font-size:12px;background:#34a853;color:white" onclick="verHistorial('${p.numeroDocumento}', '${(p.nombres + ' ' + p.apellidoPaterno + ' ' + p.apellidoMaterno).replace(/'/g, "\\'")}')">Historial</button>
                     <button class="btn btn-primary" style="padding:4px 10px;font-size:12px" onclick="cargarParaEditar('${p.numeroDocumento}')">Editar</button>
                     <button class="btn" style="padding:4px 10px;font-size:12px;background:#e53935;color:white" onclick="eliminarPaciente('${p.numeroDocumento}')">Eliminar</button>
                 </td>
             </tr>
         `).join('');
+    }
+
+    async function verHistorial(numeroDocumento, nombreCompleto) {
+        document.getElementById('tituloHistorial').textContent = `Historial de Atenciones: ${nombreCompleto}`;
+        const tbody = document.getElementById('bodyHistorial');
+        tbody.innerHTML = '<tr><td colspan="2" style="text-align:center;color:#888">Cargando...</td></tr>';
+        document.getElementById('modalHistorial').classList.add('abierto');
+
+        const res = await fetch(`${API}/api/atenciones/paciente/${encodeURIComponent(numeroDocumento)}`, { headers: headersConRol(false) });
+        if (!res.ok) {
+            tbody.innerHTML = `<tr><td colspan="2" style="text-align:center;color:#c5221f">${await res.text()}</td></tr>`;
+            return;
+        }
+        const data = await res.json();
+        if (!data.length) {
+            tbody.innerHTML = '<tr><td colspan="2" style="text-align:center;color:#888">Este paciente no tiene atenciones registradas.</td></tr>';
+            return;
+        }
+        tbody.innerHTML = data.map(a => `
+            <tr>
+                <td>${a.fechaAtencion}</td>
+                <td>${a.motivo ?? '-'}</td>
+            </tr>
+        `).join('');
+    }
+
+    function cerrarHistorial() {
+        document.getElementById('modalHistorial').classList.remove('abierto');
     }
 
     document.getElementById('selRol').value = rolActual();
