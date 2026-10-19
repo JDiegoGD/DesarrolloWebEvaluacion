@@ -26,22 +26,7 @@
     </style>
 </head>
 <body>
-<nav class="navbar">
-    <h1>Sistema Hospitalario</h1>
-    <a href="/">Inicio</a>
-    <a href="/pacientes">Pacientes</a>
-    <a href="/atenciones">Atenciones</a>
-    <a href="/seguros">Seguros</a>
-    <a href="/contactos">Contactos</a>
-    <a href="/usuarios">Usuarios</a>
-    <a href="/bitacora">Bitácora</a>
-    <label style="color:white;font-size:13px;display:flex;align-items:center;gap:6px">
-        Rol de sesión:
-        <select id="selRol" onchange="cambiarRol()" style="padding:4px 8px;border-radius:6px;border:none">
-            <option value="ADMIN">Admin</option>
-            </select>
-    </label>
-</nav>
+<nav th:replace="~{fragments/navbar :: navbar}"></nav>
 <div class="container">
 
     <div class="card">
@@ -72,6 +57,7 @@
     </div>
 </div>
 
+<script th:src="@{/js/api.js}"></script>
 <script>
 const API = '';
 
@@ -86,7 +72,7 @@ async function buscar() {
     const doc = document.getElementById('docPaciente').value.trim();
     if (!doc) return;
     const tbody = document.getElementById('bodyBitacora');
-    const res = await fetch(`${API}/api/pacientes/documento/${encodeURIComponent(doc)}/bitacora`, { headers: { 'X-Rol': rolActual() } });
+    const res = await apiFetch(`${API}/api/pacientes/documento/${encodeURIComponent(doc)}/bitacora`, { headers: { 'X-Rol': rolActual() } });
     if (!res.ok) {
         tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:#c5221f">${await res.text()}</td></tr>`;
         return;
@@ -108,7 +94,6 @@ async function buscar() {
     `).join('');
 }
 
-document.getElementById('selRol').value = rolActual();
 </script>
 </body>
 </html>

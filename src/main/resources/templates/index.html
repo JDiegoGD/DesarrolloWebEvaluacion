@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security" lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -30,16 +30,7 @@
     </style>
 </head>
 <body>
-<nav class="navbar">
-    <h1>Sistema Hospitalario</h1>
-    <a href="/">Inicio</a>
-    <a href="/pacientes">Pacientes</a>
-    <a href="/atenciones">Atenciones</a>
-    <a href="/seguros">Seguros</a>
-    <a href="/contactos">Contactos</a>
-    <a href="/usuarios">Usuarios</a>
-    <a href="/bitacora">Bitácora</a>
-</nav>
+<nav th:replace="~{fragments/navbar :: navbar}"></nav>
 
 <div class="hero">
     <h2>Bienvenido al Sistema de Pacientes</h2>
@@ -48,7 +39,7 @@
 
 <div class="cards">
 
-    <a class="card" href="/pacientes">
+    <a class="card" href="/pacientes" sec:authorize-url="/pacientes">
         <div class="card-banner b1">
             <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <circle cx="32" cy="22" r="12" fill="white" fill-opacity="0.9"/>
@@ -61,7 +52,7 @@
         </div>
     </a>
 
-    <a class="card" href="/atenciones">
+    <a class="card" href="/atenciones" sec:authorize-url="/atenciones">
         <div class="card-banner b2">
             <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <rect x="24" y="8" width="16" height="48" rx="4" fill="white" fill-opacity="0.9"/>
@@ -74,7 +65,7 @@
         </div>
     </a>
 
-    <a class="card" href="/seguros">
+    <a class="card" href="/seguros" sec:authorize-url="/seguros">
         <div class="card-banner b3">
             <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M32 6L10 16v16c0 13 9.8 25.2 22 28 12.2-2.8 22-15 22-28V16L32 6z" fill="white" fill-opacity="0.9"/>
@@ -87,7 +78,7 @@
         </div>
     </a>
 
-    <a class="card" href="/contactos">
+    <a class="card" href="/contactos" sec:authorize-url="/contactos">
         <div class="card-banner b4">
             <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M20 8h-6a4 4 0 00-4 4v4c0 19.882 16.118 36 36 36h4a4 4 0 004-4v-6l-10-4-4 4a28 28 0 01-16-16l4-4-4-10z" fill="white" fill-opacity="0.9"/>
@@ -99,7 +90,7 @@
         </div>
     </a>
 
-    <a class="card" href="/usuarios">
+    <a class="card" href="/usuarios" sec:authorize-url="/usuarios">
         <div class="card-banner b5">
             <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <circle cx="22" cy="22" r="10" fill="white" fill-opacity="0.9"/>
@@ -114,7 +105,7 @@
         </div>
     </a>
 
-    <a class="card" href="/bitacora">
+    <a class="card" href="/bitacora" sec:authorize-url="/bitacora">
         <div class="card-banner b6">
             <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <rect x="12" y="8" width="40" height="48" rx="4" fill="white" fill-opacity="0.9"/>

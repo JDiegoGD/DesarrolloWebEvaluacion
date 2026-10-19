@@ -39,22 +39,7 @@
     </style>
 </head>
 <body>
-<nav class="navbar">
-    <h1>Sistema Hospitalario</h1>
-    <a href="/">Inicio</a>
-    <a href="/pacientes">Pacientes</a>
-    <a href="/atenciones">Atenciones</a>
-    <a href="/seguros">Seguros</a>
-    <a href="/contactos">Contactos</a>
-    <a href="/usuarios">Usuarios</a>
-    <a href="/bitacora">Bitácora</a>
-    <label style="color:white;font-size:13px;display:flex;align-items:center;gap:6px">
-        Rol de sesión:
-        <select id="selRol" onchange="cambiarRol()" style="padding:4px 8px;border-radius:6px;border:none">
-            <option value="ADMIN">Admin</option>
-            </select>
-    </label>
-</nav>
+<nav th:replace="~{fragments/navbar :: navbar}"></nav>
 <div class="container">
 
     <div class="card">
@@ -110,6 +95,7 @@
     </div>
 </div>
 
+<script th:src="@{/js/api.js}"></script>
 <script>
 const API = '';
 
@@ -133,7 +119,7 @@ async function registrarUsuario() {
         password: document.getElementById('password').value,
         rolId: Number(document.getElementById('rol').value) || null
     };
-    const res = await fetch(`${API}/api/usuarios`, {
+    const res = await apiFetch(`${API}/api/usuarios`, {
         method: 'POST',
         headers: headersConRol(true),
         body: JSON.stringify(body)
@@ -151,7 +137,7 @@ async function registrarUsuario() {
 }
 
 async function listarTodos() {
-    const res = await fetch(`${API}/api/usuarios`, { headers: headersConRol(false) });
+    const res = await apiFetch(`${API}/api/usuarios`, { headers: headersConRol(false) });
     if (!res.ok) return alert(await res.text());
     const data = await res.json();
     renderTabla(data);
@@ -160,7 +146,7 @@ async function listarTodos() {
 async function filtrar() {
     const rolId = document.getElementById('filtroRol').value;
     const url = rolId ? `${API}/api/usuarios?rolId=${rolId}` : `${API}/api/usuarios`;
-    const res = await fetch(url, { headers: headersConRol(false) });
+    const res = await apiFetch(url, { headers: headersConRol(false) });
     if (!res.ok) return alert(await res.text());
     const data = await res.json();
     renderTabla(data);
@@ -168,7 +154,7 @@ async function filtrar() {
 
 async function eliminarUsuario(nombreUsuario) {
     if (!confirm(`¿Eliminar al usuario "${nombreUsuario}"?`)) return;
-    const res = await fetch(`${API}/api/usuarios/${encodeURIComponent(nombreUsuario)}`, {
+    const res = await apiFetch(`${API}/api/usuarios/${encodeURIComponent(nombreUsuario)}`, {
         method: 'DELETE',
         headers: headersConRol(false)
     });
@@ -180,7 +166,7 @@ async function eliminarUsuario(nombreUsuario) {
 }
 
 async function cambiarEstado(id, activo) {
-    const res = await fetch(`${API}/api/usuarios/${id}/estado`, {
+    const res = await apiFetch(`${API}/api/usuarios/${id}/estado`, {
         method: 'PATCH',
         headers: headersConRol(true),
         body: JSON.stringify({ activo })
@@ -190,7 +176,7 @@ async function cambiarEstado(id, activo) {
 }
 
 async function cargarRoles() {
-    const res = await fetch(`${API}/api/roles?activo=true`, { headers: headersConRol(false) });
+    const res = await apiFetch(`${API}/api/roles?activo=true`, { headers: headersConRol(false) });
     if (!res.ok) return;
     const roles = await res.json();
     const opciones = roles.map(r => `<option value="${r.id}">${r.nombre}</option>`).join('');
@@ -220,7 +206,6 @@ function renderTabla(lista) {
     `).join('');
 }
 
-document.getElementById('selRol').value = rolActual();
 cargarRoles();
 listarTodos();
 </script>

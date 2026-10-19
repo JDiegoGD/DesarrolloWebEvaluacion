@@ -46,22 +46,7 @@
     </style>
 </head>
 <body>
-<nav class="navbar">
-    <h1>Sistema Hospitalario</h1>
-    <a href="/">Inicio</a>
-    <a href="/pacientes">Pacientes</a>
-    <a href="/atenciones">Atenciones</a>
-    <a href="/seguros">Seguros</a>
-    <a href="/contactos">Contactos</a>
-    <a href="/usuarios">Usuarios</a>
-    <a href="/bitacora">Bitácora</a>
-    <label style="color:white;font-size:13px;display:flex;align-items:center;gap:6px">
-        Rol de sesión:
-        <select id="selRol" onchange="cambiarRol()" style="padding:4px 8px;border-radius:6px;border:none">
-            <option value="ADMIN">Admin</option>
-            </select>
-    </label>
-</nav>
+<nav th:replace="~{fragments/navbar :: navbar}"></nav>
 <div class="container">
 
     <div class="card">
@@ -226,6 +211,7 @@
     </div>
 </div>
 
+<script th:src="@{/js/api.js}"></script>
 <script>
     const API = '';
 
@@ -259,7 +245,7 @@
 
     async function cargarTiposDocumento() {
         try {
-            const res = await fetch(`${API}/api/catalogos/tipo-documento`);
+            const res = await apiFetch(`${API}/api/catalogos/tipo-documento`);
             const data = await res.json();
             const select = document.getElementById('idTipoDoc');
             select.innerHTML = '<option value="">-- Seleccionar --</option>';
@@ -420,7 +406,7 @@
                     msg.textContent = 'Ingresa el usuario que realiza la edición.';
                     return;
                 }
-                res = await fetch(`${API}/api/pacientes/documento/${encodeURIComponent(idEnEdicion)}?nombreUsuario=${encodeURIComponent(nombreUsuario)}`, {
+                res = await apiFetch(`${API}/api/pacientes/documento/${encodeURIComponent(idEnEdicion)}?nombreUsuario=${encodeURIComponent(nombreUsuario)}`, {
                     method: 'PUT',
                     headers: headersConRol(true),
                     body: JSON.stringify(body)
@@ -436,7 +422,7 @@
                     msg.textContent = typeof data === 'string' ? data : 'Error al actualizar paciente.';
                 }
             } else {
-                res = await fetch(`${API}/api/pacientes`, {
+                res = await apiFetch(`${API}/api/pacientes`, {
                     method: 'POST',
                     headers: headersConRol(true),
                     body: JSON.stringify(body)
@@ -455,7 +441,7 @@
     }
 
     async function cargarParaEditar(numeroDocumento) {
-        const res = await fetch(`${API}/api/pacientes/documento/${encodeURIComponent(numeroDocumento)}`, { headers: headersConRol(false) });
+        const res = await apiFetch(`${API}/api/pacientes/documento/${encodeURIComponent(numeroDocumento)}`, { headers: headersConRol(false) });
         if (!res.ok) return alert('No se pudo cargar el paciente.');
         const p = await res.json();
         idEnEdicion = numeroDocumento;
@@ -504,7 +490,7 @@
     async function eliminarPaciente(numeroDocumento) {
         if (!confirm('¿Seguro que deseas eliminar/desactivar este paciente?')) return;
         try {
-            const res = await fetch(`${API}/api/pacientes/documento/${encodeURIComponent(numeroDocumento)}`, { method: 'DELETE', headers: headersConRol(false) });
+            const res = await apiFetch(`${API}/api/pacientes/documento/${encodeURIComponent(numeroDocumento)}`, { method: 'DELETE', headers: headersConRol(false) });
             const texto = await res.text();
             const msg = document.getElementById('msg');
             if (res.ok) {
@@ -519,7 +505,7 @@
     }
 
     async function listarTodos() {
-        const res = await fetch(`${API}/api/pacientes`, { headers: headersConRol(false) });
+        const res = await apiFetch(`${API}/api/pacientes`, { headers: headersConRol(false) });
         if (!res.ok) return alert(await res.text());
         const data = await res.json();
         renderTabla(data);
@@ -531,19 +517,19 @@
 
         // Código de paciente: PAC-XXXX
         if (q.toUpperCase().startsWith('PAC-')) {
-            const res = await fetch(`${API}/api/pacientes/codigo/${encodeURIComponent(q)}`, { headers: headersConRol(false) });
+            const res = await apiFetch(`${API}/api/pacientes/codigo/${encodeURIComponent(q)}`, { headers: headersConRol(false) });
             if (res.status === 404) return renderTabla([]);
             if (!res.ok) return alert(await res.text());
             return renderTabla([await res.json()]);
         }
 
         // Se intenta por documento primero (DNI, CE, RUC, etc.)
-        let res = await fetch(`${API}/api/pacientes/documento/${encodeURIComponent(q)}`, { headers: headersConRol(false) });
+        let res = await apiFetch(`${API}/api/pacientes/documento/${encodeURIComponent(q)}`, { headers: headersConRol(false) });
         if (res.ok) return renderTabla([await res.json()]);
         if (res.status !== 404) return alert(await res.text());
 
         // Si no coincide con ningún documento, se busca por nombres/apellidos.
-        res = await fetch(`${API}/api/pacientes/buscar?nombres=${encodeURIComponent(q)}`, { headers: headersConRol(false) });
+        res = await apiFetch(`${API}/api/pacientes/buscar?nombres=${encodeURIComponent(q)}`, { headers: headersConRol(false) });
         if (!res.ok) return alert(await res.text());
         const data = await res.json();
         renderTabla(Array.isArray(data) ? data : [data]);
@@ -578,7 +564,7 @@
         tbody.innerHTML = '<tr><td colspan="2" style="text-align:center;color:#888">Cargando...</td></tr>';
         document.getElementById('modalHistorial').classList.add('abierto');
 
-        const res = await fetch(`${API}/api/atenciones/paciente/${encodeURIComponent(numeroDocumento)}`, { headers: headersConRol(false) });
+        const res = await apiFetch(`${API}/api/atenciones/paciente/${encodeURIComponent(numeroDocumento)}`, { headers: headersConRol(false) });
         if (!res.ok) {
             tbody.innerHTML = `<tr><td colspan="2" style="text-align:center;color:#c5221f">${await res.text()}</td></tr>`;
             return;
@@ -600,7 +586,6 @@
         document.getElementById('modalHistorial').classList.remove('abierto');
     }
 
-    document.getElementById('selRol').value = rolActual();
     cargarTiposDocumento();
     listarTodos();
 </script>

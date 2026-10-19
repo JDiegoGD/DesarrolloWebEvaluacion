@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Acceso denegado - Sistema Hospitalario</title>
+    <style>
+        *{box-sizing:border-box;margin:0;padding:0}
+        body{font-family:Arial,sans-serif;background:#f0f2f5}
+        .navbar{background:#1a73e8;padding:14px 30px;display:flex;align-items:center;gap:20px}
+        .navbar h1{color:white;font-size:20px;flex:1}
+        .navbar a{color:white;text-decoration:none;padding:8px 16px;border-radius:6px;font-size:14px}
+        .navbar a:hover{background:rgba(255,255,255,0.2)}
+        .card{background:white;border-radius:16px;padding:40px;margin:40px auto;max-width:520px;text-align:center;box-shadow:0 2px 10px rgba(0,0,0,0.08)}
+        .codigo{font-size:56px;font-weight:bold;color:#e53935}
+        .card h2{color:#333;margin:10px 0}
+        .card p{color:#777;font-size:14px;margin-bottom:24px}
+        .btn{display:inline-block;padding:10px 20px;border-radius:6px;background:#1a73e8;color:white;text-decoration:none;font-weight:bold;font-size:14px}
+    </style>
+</head>
+<body>
+<nav th:replace="~{fragments/navbar :: navbar}"></nav>
+<div class="card">
+    <div class="codigo">403</div>
+    <h2>Acceso denegado</h2>
+    <p>Tu rol no tiene permiso para ver esta página. Si crees que es un error, contacta al administrador.</p>
+    <a class="btn" href="/">Volver al inicio</a>
+</div>
+</body>
+</html>

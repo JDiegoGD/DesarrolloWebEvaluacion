@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security" lang="es">
+<body>
+<!-- Barra común: cada enlace se muestra según las reglas de URL de SecurityConfig (sec:authorize-url) -->
+<nav class="navbar" th:fragment="navbar">
+    <h1>Sistema Hospitalario</h1>
+    <a href="/">Inicio</a>
+    <a href="/pacientes" sec:authorize-url="/pacientes">Pacientes</a>
+    <a href="/atenciones" sec:authorize-url="/atenciones">Atenciones</a>
+    <a href="/seguros" sec:authorize-url="/seguros">Seguros</a>
+    <a href="/contactos" sec:authorize-url="/contactos">Contactos</a>
+    <a href="/usuarios" sec:authorize-url="/usuarios">Usuarios</a>
+    <a href="/bitacora" sec:authorize-url="/bitacora">Bitácora</a>
+    <span sec:authorize="isAuthenticated()" style="color:white;font-size:13px;display:flex;align-items:center;gap:10px">
+        <span>
+            <strong sec:authentication="name">usuario</strong>
+            <!-- Solo ROLE_*: Spring Security 7 también añade FACTOR_PASSWORD -->
+            (<span th:text="${#strings.replace(#strings.listJoin(#authentication.authorities.?[authority.startsWith('ROLE_')].![authority], ', '), 'ROLE_', '')}">ROL</span>)
+        </span>
+        <form th:action="@{/logout}" method="post" style="margin:0">
+            <button type="submit" style="padding:6px 12px;border:none;border-radius:6px;cursor:pointer;font-size:13px;background:rgba(255,255,255,0.2);color:white">Cerrar sesión</button>
+        </form>
+    </span>
+</nav>
+</body>
+</html>
