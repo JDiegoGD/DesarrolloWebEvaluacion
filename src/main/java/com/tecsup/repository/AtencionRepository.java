@@ -10,13 +10,13 @@ import java.util.List;
 public interface AtencionRepository extends JpaRepository<Atencion, Integer> {
 
     @Override
-    @EntityGraph(attributePaths = {"paciente", "paciente.tipoDocumento", "paciente.ubigeo", "medico"})
+    @EntityGraph(attributePaths = {"paciente", "paciente.tipoDocumento", "paciente.ubigeo", "medico", "medico.rol"})
     List<Atencion> findAll();
 
-    @EntityGraph(attributePaths = {"paciente", "paciente.tipoDocumento", "paciente.ubigeo", "medico"})
+    @EntityGraph(attributePaths = {"paciente", "paciente.tipoDocumento", "paciente.ubigeo", "medico", "medico.rol"})
     List<Atencion> findByPacienteIdPacienteOrderByFechaAtencionDesc(Integer idPaciente);
 
-    @EntityGraph(attributePaths = {"paciente", "paciente.tipoDocumento", "paciente.ubigeo", "medico"})
+    @EntityGraph(attributePaths = {"paciente", "paciente.tipoDocumento", "paciente.ubigeo", "medico", "medico.rol"})
     List<Atencion> findByPaciente_NumeroDocumentoOrderByFechaAtencionDesc(String numeroDocumento);
 
     long countByPacienteIdPaciente(Integer idPaciente);

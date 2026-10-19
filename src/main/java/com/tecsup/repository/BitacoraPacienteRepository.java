@@ -8,9 +8,9 @@ import java.util.List;
 
 @Repository
 public interface BitacoraPacienteRepository extends JpaRepository<BitacoraPaciente, Integer> {
-    @EntityGraph(attributePaths = {"paciente", "paciente.tipoDocumento", "paciente.ubigeo", "usuario"})
+    @EntityGraph(attributePaths = {"paciente", "paciente.tipoDocumento", "paciente.ubigeo", "usuario", "usuario.rol"})
     List<BitacoraPaciente> findByPacienteIdPacienteOrderByFechaHoraDesc(Integer idPaciente);
 
-    @EntityGraph(attributePaths = {"paciente", "paciente.tipoDocumento", "paciente.ubigeo", "usuario"})
+    @EntityGraph(attributePaths = {"paciente", "paciente.tipoDocumento", "paciente.ubigeo", "usuario", "usuario.rol"})
     List<BitacoraPaciente> findByPaciente_NumeroDocumentoOrderByFechaHoraDesc(String numeroDocumento);
 }
