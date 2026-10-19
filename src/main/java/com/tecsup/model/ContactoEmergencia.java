@@ -14,7 +14,7 @@ public class ContactoEmergencia {
     private Integer idContacto;
 
     @NotNull(message = "debes indicar el paciente")
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_paciente", nullable = false)
     private Paciente paciente;
 

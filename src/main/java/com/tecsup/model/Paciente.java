@@ -8,6 +8,7 @@ import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Period;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -23,7 +24,7 @@ public class Paciente {
 
     @Valid
     @NotNull(message = "debes indicar el tipo de documento")
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_tipo_documento", nullable = false)
     private TipoDocumento tipoDocumento;
 
@@ -62,7 +63,7 @@ public class Paciente {
     @Column(unique = true, length = 100) private String correoElectronico;
     @Column(length = 200) private String direccion;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_ubigeo")
     private Ubigeo ubigeo;
 
@@ -80,33 +81,35 @@ public class Paciente {
     @PrePersist
     public void prePersist() { this.fechaRegistro = LocalDateTime.now(); }
 
+    // Datos que pertenecen al paciente: se crean y eliminan con él
     @JsonIgnore
-    @OneToMany(mappedBy = "paciente", cascade = CascadeType.ALL)
-    private List<ContactoEmergencia> contactosEmergencia;
+    @OneToMany(mappedBy = "paciente", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<ContactoEmergencia> contactosEmergencia = new ArrayList<>();
 
     @JsonIgnore
-    @OneToMany(mappedBy = "paciente", cascade = CascadeType.ALL)
-    private List<SeguroPaciente> seguros;
+    @OneToMany(mappedBy = "paciente", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<SeguroPaciente> seguros = new ArrayList<>();
 
     @JsonIgnore
-    @OneToMany(mappedBy = "paciente", cascade = CascadeType.ALL)
-    private List<Atencion> atenciones;
+    @OneToMany(mappedBy = "paciente", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<AntecedentePersonal> antecedentesPersonales = new ArrayList<>();
 
     @JsonIgnore
-    @OneToMany(mappedBy = "paciente", cascade = CascadeType.ALL)
-    private List<AntecedentePersonal> antecedentesPersonales;
+    @OneToMany(mappedBy = "paciente", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<AntecedenteFamiliar> antecedentesFamiliares = new ArrayList<>();
 
     @JsonIgnore
-    @OneToMany(mappedBy = "paciente", cascade = CascadeType.ALL)
-    private List<AntecedenteFamiliar> antecedentesFamiliares;
+    @OneToMany(mappedBy = "paciente", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<Alergia> alergias = new ArrayList<>();
+
+    // Historial: sin cascade ni orphanRemoval, se guarda con su propio repositorio
+    @JsonIgnore
+    @OneToMany(mappedBy = "paciente", fetch = FetchType.LAZY)
+    private List<Atencion> atenciones = new ArrayList<>();
 
     @JsonIgnore
-    @OneToMany(mappedBy = "paciente", cascade = CascadeType.ALL)
-    private List<Alergia> alergias;
-
-    @JsonIgnore
-    @OneToMany(mappedBy = "paciente", cascade = CascadeType.ALL)
-    private List<BitacoraPaciente> bitacora;
+    @OneToMany(mappedBy = "paciente", fetch = FetchType.LAZY)
+    private List<BitacoraPaciente> bitacora = new ArrayList<>();
 
     @JsonIgnore
     public Integer getIdPaciente() {
@@ -216,4 +219,40 @@ public class Paciente {
         return alergias; }
     public List<BitacoraPaciente> getBitacora() {
         return bitacora; }
+
+    // Helpers: mantienen sincronizados ambos lados de la relación
+    public void addContactoEmergencia(ContactoEmergencia c) {
+        contactosEmergencia.add(c);
+        c.setPaciente(this); }
+    public void removeContactoEmergencia(ContactoEmergencia c) {
+        contactosEmergencia.remove(c);
+        c.setPaciente(null); }
+
+    public void addSeguro(SeguroPaciente s) {
+        seguros.add(s);
+        s.setPaciente(this); }
+    public void removeSeguro(SeguroPaciente s) {
+        seguros.remove(s);
+        s.setPaciente(null); }
+
+    public void addAntecedentePersonal(AntecedentePersonal a) {
+        antecedentesPersonales.add(a);
+        a.setPaciente(this); }
+    public void removeAntecedentePersonal(AntecedentePersonal a) {
+        antecedentesPersonales.remove(a);
+        a.setPaciente(null); }
+
+    public void addAntecedenteFamiliar(AntecedenteFamiliar a) {
+        antecedentesFamiliares.add(a);
+        a.setPaciente(this); }
+    public void removeAntecedenteFamiliar(AntecedenteFamiliar a) {
+        antecedentesFamiliares.remove(a);
+        a.setPaciente(null); }
+
+    public void addAlergia(Alergia a) {
+        alergias.add(a);
+        a.setPaciente(this); }
+    public void removeAlergia(Alergia a) {
+        alergias.remove(a);
+        a.setPaciente(null); }
 }

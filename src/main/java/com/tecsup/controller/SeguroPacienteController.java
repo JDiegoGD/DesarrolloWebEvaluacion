@@ -3,7 +3,9 @@ package com.tecsup.controller;
 import com.tecsup.model.SeguroPaciente;
 import com.tecsup.service.SeguroPacienteService;
 import jakarta.validation.Valid;
+import com.tecsup.exception.RecursoNoEncontradoException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
@@ -18,6 +20,8 @@ public class SeguroPacienteController {
     public ResponseEntity<?> registrar(@Valid @RequestBody SeguroPaciente s) {
         try {
             return ResponseEntity.status(HttpStatus.CREATED).body(service.registrar(s));
+        } catch (RecursoNoEncontradoException | DataIntegrityViolationException e) {
+            throw e; // 404 / 409 en GlobalExceptionHandler
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
@@ -32,6 +36,7 @@ public class SeguroPacienteController {
     public ResponseEntity<?> actualizar(@PathVariable Integer id,
                                         @RequestBody SeguroPaciente datos) {
         try { return ResponseEntity.ok(service.actualizar(id, datos)); }
+        catch (RecursoNoEncontradoException | DataIntegrityViolationException e) { throw e; }
         catch (RuntimeException e) { return ResponseEntity.badRequest().body(e.getMessage()); }
     }
 

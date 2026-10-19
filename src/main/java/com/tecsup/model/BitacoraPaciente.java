@@ -12,11 +12,11 @@ public class BitacoraPaciente {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer idBitacora;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_paciente", nullable = false)
     private Paciente paciente;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_usuario", nullable = false)
     private Usuario usuario;
 

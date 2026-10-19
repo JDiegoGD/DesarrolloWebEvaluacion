@@ -10,7 +10,7 @@ public class AntecedenteFamiliar {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer idAntecedenteFamiliar;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_paciente", nullable = false)
     private Paciente paciente;
 

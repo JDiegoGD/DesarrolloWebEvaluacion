@@ -3,7 +3,9 @@ package com.tecsup.controller;
 import com.tecsup.model.Usuario;
 import com.tecsup.service.UsuarioService;
 import jakarta.validation.Valid;
+import com.tecsup.exception.RecursoNoEncontradoException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
@@ -38,6 +40,8 @@ public class UsuarioController {
         try {
             service.eliminar(nombreUsuario);
             return ResponseEntity.noContent().build();
+        } catch (RecursoNoEncontradoException | DataIntegrityViolationException e) {
+            throw e; // 404 / 409 en GlobalExceptionHandler
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }

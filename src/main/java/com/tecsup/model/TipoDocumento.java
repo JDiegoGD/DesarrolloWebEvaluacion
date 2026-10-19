@@ -22,7 +22,7 @@ public class TipoDocumento {
     private String nombre;
 
     @JsonIgnore
-    @OneToMany(mappedBy = "tipoDocumento")
+    @OneToMany(mappedBy = "tipoDocumento", fetch = FetchType.LAZY)
     private List<Paciente> pacientes;
 
     @JsonIgnore

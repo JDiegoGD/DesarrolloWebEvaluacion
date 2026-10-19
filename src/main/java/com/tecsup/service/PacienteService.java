@@ -1,5 +1,9 @@
 package com.tecsup.service;
 
+import com.tecsup.exception.RecursoNoEncontradoException;
+import com.tecsup.model.Alergia;
+import com.tecsup.model.AntecedenteFamiliar;
+import com.tecsup.model.AntecedentePersonal;
 import com.tecsup.model.Paciente;
 import com.tecsup.model.BitacoraPaciente;
 import com.tecsup.model.TipoDocumento;
@@ -11,6 +15,7 @@ import com.tecsup.repository.UsuarioRepository;
 import com.tecsup.repository.AtencionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -26,6 +31,7 @@ public class PacienteService {
     @Autowired private TipoDocumentoRepository tipoDocumentoRepository;
 
     // RF-PAC-01 + RF-PAC-02
+    @Transactional
     public Paciente registrarPaciente(Paciente paciente) {
         if (pacienteRepository.existsByNumeroDocumento(paciente.getNumeroDocumento()))
             throw new RuntimeException("El número de documento ya está registrado.");
@@ -47,7 +53,7 @@ public class PacienteService {
 
     private Paciente obtenerEntidadPorDocumento(String numeroDocumento) {
         return pacienteRepository.findByNumeroDocumento(numeroDocumento)
-                .orElseThrow(() -> new RuntimeException("Paciente no encontrado (documento " + numeroDocumento + ")."));
+                .orElseThrow(() -> new RecursoNoEncontradoException("Paciente no encontrado (documento " + numeroDocumento + ")."));
     }
 
     // RF-PAC-03
@@ -80,15 +86,17 @@ public class PacienteService {
     }
 
     // RF-PAC-06
+    @Transactional(readOnly = true)
     public List<Paciente> listarTodos() {
         return pacienteRepository.findAll();
     }
 
     // RF-PAC-08
+    @Transactional
     public Paciente actualizarPaciente(String numeroDocumento, Paciente datos, String nombreUsuario) {
         Paciente e = obtenerEntidadPorDocumento(numeroDocumento);
         Usuario u = usuarioRepository.findByNombreUsuario(nombreUsuario)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado."));
+                .orElseThrow(() -> new RecursoNoEncontradoException("Usuario no encontrado."));
 
         String correoNuevo = datos.getCorreoElectronico();
         if (correoNuevo != null && !correoNuevo.isBlank() && !correoNuevo.equals(e.getCorreoElectronico())
@@ -117,7 +125,9 @@ public class PacienteService {
         return pacienteRepository.save(e);
     }
 
-    // RF-PAC-13: eliminación lógica sin lazy loading
+    // RF-PAC-13: con atenciones -> Inactivo; sin atenciones -> se borra y el cascade/orphanRemoval
+    // elimina contactos, seguros, antecedentes y alergias (atenciones y bitácora no tienen cascade)
+    @Transactional
     public void eliminarPaciente(String numeroDocumento) {
         Paciente p = obtenerEntidadPorDocumento(numeroDocumento);
         long cantidadAtenciones = atencionRepository.countByPacienteIdPaciente(p.getIdPaciente());
@@ -144,8 +154,43 @@ public class PacienteService {
         bitacoraRepository.save(log);
     }
 
+    @Transactional(readOnly = true)
     public List<BitacoraPaciente> obtenerBitacora(String numeroDocumento) {
         return bitacoraRepository
                 .findByPaciente_NumeroDocumentoOrderByFechaHoraDesc(numeroDocumento);
+    }
+
+    // Antecedentes y alergias: se agregan por el helper y se guardan por cascade
+    @Transactional
+    public AntecedentePersonal registrarAntecedentePersonal(String numeroDocumento, AntecedentePersonal a) {
+        obtenerEntidadPorDocumento(numeroDocumento).addAntecedentePersonal(a);
+        return a;
+    }
+
+    @Transactional(readOnly = true)
+    public List<AntecedentePersonal> listarAntecedentesPersonales(String numeroDocumento) {
+        return List.copyOf(obtenerEntidadPorDocumento(numeroDocumento).getAntecedentesPersonales());
+    }
+
+    @Transactional
+    public AntecedenteFamiliar registrarAntecedenteFamiliar(String numeroDocumento, AntecedenteFamiliar a) {
+        obtenerEntidadPorDocumento(numeroDocumento).addAntecedenteFamiliar(a);
+        return a;
+    }
+
+    @Transactional(readOnly = true)
+    public List<AntecedenteFamiliar> listarAntecedentesFamiliares(String numeroDocumento) {
+        return List.copyOf(obtenerEntidadPorDocumento(numeroDocumento).getAntecedentesFamiliares());
+    }
+
+    @Transactional
+    public Alergia registrarAlergia(String numeroDocumento, Alergia a) {
+        obtenerEntidadPorDocumento(numeroDocumento).addAlergia(a);
+        return a;
+    }
+
+    @Transactional(readOnly = true)
+    public List<Alergia> listarAlergias(String numeroDocumento) {
+        return List.copyOf(obtenerEntidadPorDocumento(numeroDocumento).getAlergias());
     }
 }

@@ -3,7 +3,9 @@ package com.tecsup.controller;
 import com.tecsup.model.*;
 import com.tecsup.service.PacienteService;
 import jakarta.validation.Valid;
+import com.tecsup.exception.RecursoNoEncontradoException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
@@ -21,6 +23,8 @@ public class PacienteController {
         try {
             return ResponseEntity.status(HttpStatus.CREATED)
                     .body(pacienteService.registrarPaciente(paciente));
+        } catch (RecursoNoEncontradoException | DataIntegrityViolationException e) {
+            throw e; // 404 / 409 en GlobalExceptionHandler
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
@@ -57,6 +61,7 @@ public class PacienteController {
     public ResponseEntity<?> actualizarPaciente(@PathVariable String numeroDocumento,
                                                 @RequestBody Paciente datos, @RequestParam String nombreUsuario) {
         try { return ResponseEntity.ok(pacienteService.actualizarPaciente(numeroDocumento, datos, nombreUsuario)); }
+        catch (RecursoNoEncontradoException | DataIntegrityViolationException e) { throw e; }
         catch (RuntimeException e) { return ResponseEntity.badRequest().body(e.getMessage()); }
     }
 
@@ -66,6 +71,8 @@ public class PacienteController {
         try {
             pacienteService.eliminarPaciente(numeroDocumento);
             return ResponseEntity.ok("Paciente procesado correctamente.");
+        } catch (RecursoNoEncontradoException | DataIntegrityViolationException e) {
+            throw e; // 404 / 409 en GlobalExceptionHandler
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
@@ -75,5 +82,35 @@ public class PacienteController {
     @GetMapping("/documento/{numeroDocumento}/bitacora")
     public ResponseEntity<List<BitacoraPaciente>> obtenerBitacora(@PathVariable String numeroDocumento) {
         return ResponseEntity.ok(pacienteService.obtenerBitacora(numeroDocumento));
+    }
+
+    // Antecedentes y alergias del paciente (exigen un paciente existente: 404 si no existe)
+    @PostMapping("/documento/{numeroDocumento}/antecedentes-personales")
+    public ResponseEntity<AntecedentePersonal> registrarAntecedentePersonal(@PathVariable String numeroDocumento,
+                                                                            @RequestBody AntecedentePersonal a) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(pacienteService.registrarAntecedentePersonal(numeroDocumento, a));
+    }
+    @GetMapping("/documento/{numeroDocumento}/antecedentes-personales")
+    public ResponseEntity<List<AntecedentePersonal>> listarAntecedentesPersonales(@PathVariable String numeroDocumento) {
+        return ResponseEntity.ok(pacienteService.listarAntecedentesPersonales(numeroDocumento));
+    }
+
+    @PostMapping("/documento/{numeroDocumento}/antecedentes-familiares")
+    public ResponseEntity<AntecedenteFamiliar> registrarAntecedenteFamiliar(@PathVariable String numeroDocumento,
+                                                                            @RequestBody AntecedenteFamiliar a) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(pacienteService.registrarAntecedenteFamiliar(numeroDocumento, a));
+    }
+    @GetMapping("/documento/{numeroDocumento}/antecedentes-familiares")
+    public ResponseEntity<List<AntecedenteFamiliar>> listarAntecedentesFamiliares(@PathVariable String numeroDocumento) {
+        return ResponseEntity.ok(pacienteService.listarAntecedentesFamiliares(numeroDocumento));
+    }
+
+    @PostMapping("/documento/{numeroDocumento}/alergias")
+    public ResponseEntity<Alergia> registrarAlergia(@PathVariable String numeroDocumento, @RequestBody Alergia a) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(pacienteService.registrarAlergia(numeroDocumento, a));
+    }
+    @GetMapping("/documento/{numeroDocumento}/alergias")
+    public ResponseEntity<List<Alergia>> listarAlergias(@PathVariable String numeroDocumento) {
+        return ResponseEntity.ok(pacienteService.listarAlergias(numeroDocumento));
     }
 }

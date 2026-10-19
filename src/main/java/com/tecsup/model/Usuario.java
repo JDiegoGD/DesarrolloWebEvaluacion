@@ -3,6 +3,8 @@ package com.tecsup.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "usuario")
@@ -20,6 +22,11 @@ public class Usuario {
     @Column(nullable = false, length = 50)
     private String rol;
 
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "medico", fetch = FetchType.LAZY)
+    private List<Atencion> atencionesAtendidas = new ArrayList<>();
+
     @JsonIgnore
     public Integer getIdUsuario() {
         return idUsuario; }
@@ -35,4 +42,7 @@ public class Usuario {
         return rol; }
     public void setRol(String rol) {
         this.rol = rol; }
+
+    public List<Atencion> getAtencionesAtendidas() {
+        return atencionesAtendidas; }
 }

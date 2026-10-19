@@ -3,7 +3,9 @@ package com.tecsup.controller;
 import com.tecsup.model.ContactoEmergencia;
 import com.tecsup.service.ContactoEmergenciaService;
 import jakarta.validation.Valid;
+import com.tecsup.exception.RecursoNoEncontradoException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
@@ -18,6 +20,8 @@ public class ContactoEmergenciaController {
     public ResponseEntity<?> registrar(@Valid @RequestBody ContactoEmergencia c) {
         try {
             return ResponseEntity.status(HttpStatus.CREATED).body(service.registrar(c));
+        } catch (RecursoNoEncontradoException | DataIntegrityViolationException e) {
+            throw e; // 404 / 409 en GlobalExceptionHandler
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
@@ -32,6 +36,7 @@ public class ContactoEmergenciaController {
     public ResponseEntity<?> actualizar(@PathVariable Integer id,
                                         @RequestBody ContactoEmergencia datos) {
         try { return ResponseEntity.ok(service.actualizar(id, datos)); }
+        catch (RecursoNoEncontradoException | DataIntegrityViolationException e) { throw e; }
         catch (RuntimeException e) { return ResponseEntity.badRequest().body(e.getMessage()); }
     }
 

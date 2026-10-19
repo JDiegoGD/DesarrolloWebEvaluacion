@@ -15,7 +15,7 @@ public class SeguroPaciente {
     private Integer idSeguroPaciente;
 
     @NotNull(message = "debes indicar el paciente")
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_paciente", nullable = false)
     private Paciente paciente;
 

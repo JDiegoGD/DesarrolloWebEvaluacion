@@ -3,7 +3,9 @@ package com.tecsup.controller;
 import com.tecsup.model.Atencion;
 import com.tecsup.service.AtencionService;
 import jakarta.validation.Valid;
+import com.tecsup.exception.RecursoNoEncontradoException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
@@ -25,6 +27,8 @@ public class AtencionController {
     public ResponseEntity<?> registrar(@Valid @RequestBody Atencion a) {
         try {
             return ResponseEntity.status(HttpStatus.CREATED).body(service.registrar(a));
+        } catch (RecursoNoEncontradoException | DataIntegrityViolationException e) {
+            throw e; // 404 / 409 en GlobalExceptionHandler
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
