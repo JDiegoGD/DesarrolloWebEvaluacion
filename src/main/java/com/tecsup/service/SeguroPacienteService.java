@@ -1,5 +1,8 @@
 package com.tecsup.service;
 
+import com.tecsup.auditoria.Auditable;
+import com.tecsup.enums.OperacionAuditoria;
+import com.tecsup.auditoria.AuditoriaContexto;
 import com.tecsup.model.Paciente;
 import com.tecsup.model.SeguroPaciente;
 import com.tecsup.exception.RecursoNoEncontradoException;
@@ -17,6 +20,8 @@ public class SeguroPacienteService {
     @Autowired private SeguroPacienteRepository repository;
     @Autowired private PacienteRepository pacienteRepository;
 
+    @Auditable(entidad = "SeguroPaciente", operacion = OperacionAuditoria.REGISTRO,
+            detalle = "'Se registró el seguro ' + #resultado.tipoSeguro + ' del paciente ' + #resultado.paciente.numeroDocumento")
     @Transactional
     public SeguroPaciente registrar(SeguroPaciente s) {
         if (s.getPaciente() == null || s.getPaciente().getNumeroDocumento() == null)
@@ -32,6 +37,8 @@ public class SeguroPacienteService {
         return repository.findByPaciente_NumeroDocumento(numeroDocumento);
     }
 
+    @Auditable(entidad = "SeguroPaciente", operacion = OperacionAuditoria.MODIFICACION,
+            detalle = "'Se modificó el seguro ' + #id + ' del paciente ' + #resultado.paciente.numeroDocumento")
     @Transactional
     public SeguroPaciente actualizar(Integer id, SeguroPaciente datos) {
         SeguroPaciente e = repository.findById(id)
@@ -47,10 +54,13 @@ public class SeguroPacienteService {
     }
 
     // Se quita de la lista del paciente y orphanRemoval lo elimina
+    @Auditable(entidad = "SeguroPaciente", operacion = OperacionAuditoria.ELIMINACION,
+            detalle = "'Se eliminó el seguro ' + #id")
     @Transactional
     public void eliminar(Integer id) {
         SeguroPaciente e = repository.findById(id)
                 .orElseThrow(() -> new RecursoNoEncontradoException("Seguro no encontrado (id " + id + ")."));
+        AuditoriaContexto.anotar("Paciente " + e.getPaciente().getNumeroDocumento());
         e.getPaciente().removeSeguro(e);
     }
 

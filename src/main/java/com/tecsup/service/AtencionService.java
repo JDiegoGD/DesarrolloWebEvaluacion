@@ -1,5 +1,7 @@
 package com.tecsup.service;
 
+import com.tecsup.auditoria.Auditable;
+import com.tecsup.enums.OperacionAuditoria;
 import com.tecsup.model.Atencion;
 import com.tecsup.model.Paciente;
 import com.tecsup.model.Usuario;
@@ -29,6 +31,8 @@ public class AtencionService {
         return repository.findByPaciente_NumeroDocumentoOrderByFechaAtencionDesc(numeroDocumento);
     }
 
+    @Auditable(entidad = "Atencion", operacion = OperacionAuditoria.REGISTRO,
+            detalle = "'Se registró una atención del paciente ' + #resultado.paciente.numeroDocumento + (#resultado.medico != null ? ' con el médico ' + #resultado.medico.nombreUsuario : ' sin médico')")
     @Transactional
     public Atencion registrar(Atencion atencion) {
         if (atencion.getPaciente() == null || atencion.getPaciente().getNumeroDocumento() == null)
@@ -55,6 +59,8 @@ public class AtencionService {
         return repository.findAll();
     }
 
+    @Auditable(entidad = "Atencion", operacion = OperacionAuditoria.ELIMINACION,
+            detalle = "'Se eliminó la atención ' + #id")
     public void eliminar(Integer id) {
         repository.deleteById(id);
     }

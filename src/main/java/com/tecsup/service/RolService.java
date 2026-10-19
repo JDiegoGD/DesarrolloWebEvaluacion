@@ -1,5 +1,7 @@
 package com.tecsup.service;
 
+import com.tecsup.auditoria.Auditable;
+import com.tecsup.enums.OperacionAuditoria;
 import com.tecsup.dto.RolRequestDTO;
 import com.tecsup.dto.RolResponseDTO;
 import com.tecsup.exception.ConflictoException;
@@ -19,6 +21,8 @@ public class RolService {
     @Autowired private RolRepository repository;
     @Autowired private UsuarioRepository usuarioRepository;
 
+    @Auditable(entidad = "Rol", operacion = OperacionAuditoria.REGISTRO,
+            detalle = "'Se registró el rol ' + #resultado.nombre")
     @Transactional
     public RolResponseDTO crear(RolRequestDTO dto) {
         String nombre = normalizarNombre(dto.nombre());
@@ -43,6 +47,8 @@ public class RolService {
                 .orElseThrow(() -> new RecursoNoEncontradoException("Rol no encontrado (id " + id + ")."));
     }
 
+    @Auditable(entidad = "Rol", operacion = OperacionAuditoria.MODIFICACION,
+            detalle = "'Se modificó el rol ' + #resultado.nombre")
     @Transactional
     public RolResponseDTO actualizar(Integer id, RolRequestDTO dto) {
         Rol rol = obtenerEntidad(id);
@@ -58,6 +64,8 @@ public class RolService {
         return obtener(id);
     }
 
+    @Auditable(entidad = "Rol", estado = "#activo",
+            detalle = "'Se ' + (#activo ? 'activó' : 'desactivó') + ' el rol ' + #resultado.nombre")
     @Transactional
     public RolResponseDTO cambiarEstado(Integer id, boolean activo) {
         Rol rol = obtenerEntidad(id);

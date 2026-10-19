@@ -1,5 +1,8 @@
 package com.tecsup.service;
 
+import com.tecsup.auditoria.Auditable;
+import com.tecsup.enums.OperacionAuditoria;
+import com.tecsup.auditoria.AuditoriaContexto;
 import com.tecsup.dto.UsuarioRequestDTO;
 import com.tecsup.dto.UsuarioResponseDTO;
 import com.tecsup.exception.ConflictoException;
@@ -23,6 +26,8 @@ public class UsuarioService {
     @Autowired private RolRepository rolRepository;
     @Autowired private PasswordEncoder passwordEncoder;
 
+    @Auditable(entidad = "Usuario", operacion = OperacionAuditoria.REGISTRO,
+            detalle = "'Se registró el usuario ' + #resultado.nombreUsuario + ' con rol ' + #resultado.rolNombre")
     @Transactional
     public UsuarioResponseDTO crear(UsuarioRequestDTO dto) {
         String nombreUsuario = dto.nombreUsuario().trim();
@@ -62,6 +67,8 @@ public class UsuarioService {
     }
 
     // Edita nombres, correo, rol y, si viene, el password (el nombre de usuario no se cambia)
+    @Auditable(entidad = "Usuario", operacion = OperacionAuditoria.MODIFICACION,
+            detalle = "'Se modificó el usuario ' + #resultado.nombreUsuario + ' (nombres, correo, rol' + (#dto.password() != null && !#dto.password().isBlank() ? ' y contraseña' : '') + ')'")
     @Transactional
     public UsuarioResponseDTO actualizar(Integer id, UsuarioRequestDTO dto) {
         Usuario u = obtenerEntidad(id);
@@ -79,6 +86,8 @@ public class UsuarioService {
         return UsuarioResponseDTO.de(u);
     }
 
+    @Auditable(entidad = "Usuario", estado = "#activo",
+            detalle = "'Se ' + (#activo ? 'activó' : 'desactivó') + ' el usuario ' + #resultado.nombreUsuario")
     @Transactional
     public UsuarioResponseDTO cambiarEstado(Integer id, boolean activo) {
         Usuario u = obtenerEntidad(id);
@@ -90,26 +99,34 @@ public class UsuarioService {
         return UsuarioResponseDTO.de(u);
     }
 
+    @Auditable(entidad = "Usuario", operacion = OperacionAuditoria.MODIFICACION,
+            detalle = "'Se cambió el rol del usuario ' + #resultado.nombreUsuario + ' a ' + #resultado.rolNombre")
     @Transactional
     public UsuarioResponseDTO cambiarRol(Integer id, Integer rolId) {
         Usuario u = obtenerEntidad(id);
+        AuditoriaContexto.anotar("Rol anterior: " + u.getRol().getNombre());
         cambiarRolValidado(u, rolId);
         return UsuarioResponseDTO.de(u);
     }
 
     // DELETE físico existente: 409 por FK si tiene atenciones o bitácora (se prefiere desactivar)
+    @Auditable(entidad = "Usuario", operacion = OperacionAuditoria.ELIMINACION,
+            detalle = "'Se eliminó el usuario ' + #nombreUsuario")
     @Transactional
-    public void eliminar(String nombreUsuario) {
+    public Integer eliminar(String nombreUsuario) {
         Usuario u = repository.findByNombreUsuario(nombreUsuario)
                 .orElseThrow(() -> new RecursoNoEncontradoException("Usuario no encontrado."));
         validarNoEsUltimoAdministrador(u, "eliminar");
         repository.delete(u);
         repository.flush();
+        return u.getIdUsuario();
     }
 
     // Cambio de la propia contraseña (p. ej. las temporales "Cambiar123*" / "Admin123*")
+    @Auditable(entidad = "Usuario", operacion = OperacionAuditoria.MODIFICACION,
+            detalle = "'Cambio de contraseña del usuario ' + #nombreUsuario")
     @Transactional
-    public void cambiarPasswordPropia(String nombreUsuario, String actual, String nueva) {
+    public Integer cambiarPasswordPropia(String nombreUsuario, String actual, String nueva) {
         Usuario u = repository.findByNombreUsuario(nombreUsuario)
                 .orElseThrow(() -> new RecursoNoEncontradoException("Usuario no encontrado."));
         if (!passwordEncoder.matches(actual, u.getPassword()))
@@ -117,6 +134,7 @@ public class UsuarioService {
         if (passwordEncoder.matches(nueva, u.getPassword()))
             throw new SolicitudInvalidaException("La contraseña nueva debe ser distinta de la actual.");
         u.setPassword(passwordEncoder.encode(nueva));
+        return u.getIdUsuario();
     }
 
     private Usuario obtenerEntidad(Integer id) {

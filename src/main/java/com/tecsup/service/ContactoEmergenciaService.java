@@ -1,5 +1,8 @@
 package com.tecsup.service;
 
+import com.tecsup.auditoria.Auditable;
+import com.tecsup.enums.OperacionAuditoria;
+import com.tecsup.auditoria.AuditoriaContexto;
 import com.tecsup.model.ContactoEmergencia;
 import com.tecsup.model.Paciente;
 import com.tecsup.repository.ContactoEmergenciaRepository;
@@ -17,6 +20,8 @@ public class ContactoEmergenciaService {
     @Autowired private ContactoEmergenciaRepository repository;
     @Autowired private PacienteRepository pacienteRepository;
 
+    @Auditable(entidad = "ContactoEmergencia", operacion = OperacionAuditoria.REGISTRO,
+            detalle = "'Se registró el contacto de emergencia ' + #resultado.nombreCompleto + ' del paciente ' + #resultado.paciente.numeroDocumento")
     @Transactional
     public ContactoEmergencia registrar(ContactoEmergencia c) {
         if (c.getPaciente() == null || c.getPaciente().getNumeroDocumento() == null)
@@ -32,6 +37,8 @@ public class ContactoEmergenciaService {
         return repository.findByPaciente_NumeroDocumento(numeroDocumento);
     }
 
+    @Auditable(entidad = "ContactoEmergencia", operacion = OperacionAuditoria.MODIFICACION,
+            detalle = "'Se modificó el contacto de emergencia ' + #id + ' del paciente ' + #resultado.paciente.numeroDocumento")
     @Transactional
     public ContactoEmergencia actualizar(Integer id, ContactoEmergencia datos) {
         ContactoEmergencia e = repository.findById(id)
@@ -46,10 +53,13 @@ public class ContactoEmergenciaService {
     }
 
     // Se quita de la lista del paciente y orphanRemoval lo elimina
+    @Auditable(entidad = "ContactoEmergencia", operacion = OperacionAuditoria.ELIMINACION,
+            detalle = "'Se eliminó el contacto de emergencia ' + #id")
     @Transactional
     public void eliminar(Integer id) {
         ContactoEmergencia e = repository.findById(id)
                 .orElseThrow(() -> new RecursoNoEncontradoException("Contacto no encontrado (id " + id + ")."));
+        AuditoriaContexto.anotar("Paciente " + e.getPaciente().getNumeroDocumento());
         e.getPaciente().removeContactoEmergencia(e);
     }
 

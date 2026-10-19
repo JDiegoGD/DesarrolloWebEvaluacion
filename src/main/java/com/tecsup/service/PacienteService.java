@@ -1,5 +1,9 @@
 package com.tecsup.service;
 
+import com.tecsup.auditoria.Auditable;
+import com.tecsup.enums.OperacionAuditoria;
+import com.tecsup.auditoria.AuditoriaContexto;
+import com.tecsup.dto.EliminacionPaciente;
 import com.tecsup.exception.RecursoNoEncontradoException;
 import com.tecsup.model.Alergia;
 import com.tecsup.model.AntecedenteFamiliar;
@@ -16,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -31,6 +36,8 @@ public class PacienteService {
     @Autowired private UsuarioActualService usuarioActualService;
 
     // RF-PAC-01 + RF-PAC-02
+    @Auditable(entidad = "Paciente", operacion = OperacionAuditoria.REGISTRO,
+            detalle = "'Se registró el paciente ' + #resultado.numeroDocumento + ' (' + #resultado.codigoPaciente + ')'")
     @Transactional
     public Paciente registrarPaciente(Paciente paciente) {
         if (pacienteRepository.existsByNumeroDocumento(paciente.getNumeroDocumento()))
@@ -94,6 +101,8 @@ public class PacienteService {
     // RF-PAC-08
     @Transactional
     // La bitácora registra siempre al usuario autenticado (no se acepta un usuario por parámetro)
+    @Auditable(entidad = "Paciente", operacion = OperacionAuditoria.MODIFICACION,
+            detalle = "'Se modificó el paciente ' + #numeroDocumento")
     public Paciente actualizarPaciente(String numeroDocumento, Paciente datos) {
         Paciente e = obtenerEntidadPorDocumento(numeroDocumento);
         Usuario u = usuarioActualService.obtener();
@@ -108,10 +117,16 @@ public class PacienteService {
                 && pacienteRepository.existsByTelefono(telefonoNuevo))
             throw new RuntimeException("El teléfono ya está registrado por otro paciente.");
 
-        registrarBitacora(e, u, "nombres", e.getNombres(), datos.getNombres());
-        registrarBitacora(e, u, "telefono", e.getTelefono(), datos.getTelefono());
-        registrarBitacora(e, u, "correoElectronico", e.getCorreoElectronico(), datos.getCorreoElectronico());
-        registrarBitacora(e, u, "estado", e.getEstado(), datos.getEstado());
+        // Los campos que cambian salen de la bitácora existente y se añaden al detalle de la auditoría
+        List<String> cambiados = new ArrayList<>();
+        if (registrarBitacora(e, u, "nombres", e.getNombres(), datos.getNombres())) cambiados.add("nombres");
+        if (registrarBitacora(e, u, "telefono", e.getTelefono(), datos.getTelefono())) cambiados.add("telefono");
+        if (registrarBitacora(e, u, "correoElectronico", e.getCorreoElectronico(), datos.getCorreoElectronico()))
+            cambiados.add("correoElectronico");
+        if (registrarBitacora(e, u, "estado", e.getEstado(), datos.getEstado())) cambiados.add("estado");
+        AuditoriaContexto.anotar(cambiados.isEmpty()
+                ? "Sin cambios en nombres, teléfono, correo ni estado"
+                : "Campos modificados: " + String.join(", ", cambiados));
         e.setNombres(datos.getNombres());
         e.setApellidoPaterno(datos.getApellidoPaterno());
         e.setApellidoMaterno(datos.getApellidoMaterno());
@@ -127,22 +142,27 @@ public class PacienteService {
 
     // RF-PAC-13: con atenciones -> Inactivo; sin atenciones -> se borra y el cascade/orphanRemoval
     // elimina contactos, seguros, antecedentes y alergias (atenciones y bitácora no tienen cascade)
+    @Auditable(entidad = "Paciente", operacion = OperacionAuditoria.ELIMINACION,
+            detalle = "#resultado.bajaLogica ? 'Baja lógica del paciente ' + #numeroDocumento + ': pasó a Inactivo porque tiene atenciones' : 'Eliminación física del paciente ' + #numeroDocumento + ' (sin atenciones)'")
     @Transactional
-    public void eliminarPaciente(String numeroDocumento) {
+    public EliminacionPaciente eliminarPaciente(String numeroDocumento) {
         Paciente p = obtenerEntidadPorDocumento(numeroDocumento);
         long cantidadAtenciones = atencionRepository.countByPacienteIdPaciente(p.getIdPaciente());
-        if (cantidadAtenciones > 0) {
+        boolean bajaLogica = cantidadAtenciones > 0;
+        if (bajaLogica) {
             p.setEstado("Inactivo");
             pacienteRepository.save(p);
         } else {
             pacienteRepository.delete(p);
         }
+        return new EliminacionPaciente(p.getIdPaciente(), p.getNumeroDocumento(), bajaLogica);
     }
 
     // RF-PAC-12: solo campos que cambiaron (null y "" se consideran iguales)
-    public void registrarBitacora(Paciente paciente, Usuario usuario,
-                                  String campo, String anterior, String nuevo) {
-        if (Objects.equals(vacioANull(anterior), vacioANull(nuevo))) return;
+    // Devuelve true si el campo cambió y se registró
+    public boolean registrarBitacora(Paciente paciente, Usuario usuario,
+                                     String campo, String anterior, String nuevo) {
+        if (Objects.equals(vacioANull(anterior), vacioANull(nuevo))) return false;
         BitacoraPaciente log = new BitacoraPaciente();
         log.setPaciente(paciente);
         log.setUsuario(usuario);
@@ -152,6 +172,7 @@ public class PacienteService {
         log.setValorAnterior(anterior);
         log.setValorNuevo(nuevo);
         bitacoraRepository.save(log);
+        return true;
     }
 
     private static String vacioANull(String valor) {
@@ -165,6 +186,8 @@ public class PacienteService {
     }
 
     // Antecedentes y alergias: se agregan por el helper y se guardan por cascade
+    @Auditable(entidad = "AntecedentePersonal", operacion = OperacionAuditoria.REGISTRO,
+            detalle = "'Se registró un antecedente personal del paciente ' + #numeroDocumento")
     @Transactional
     public AntecedentePersonal registrarAntecedentePersonal(String numeroDocumento, AntecedentePersonal a) {
         obtenerEntidadPorDocumento(numeroDocumento).addAntecedentePersonal(a);
@@ -176,6 +199,8 @@ public class PacienteService {
         return List.copyOf(obtenerEntidadPorDocumento(numeroDocumento).getAntecedentesPersonales());
     }
 
+    @Auditable(entidad = "AntecedenteFamiliar", operacion = OperacionAuditoria.REGISTRO,
+            detalle = "'Se registró un antecedente familiar del paciente ' + #numeroDocumento")
     @Transactional
     public AntecedenteFamiliar registrarAntecedenteFamiliar(String numeroDocumento, AntecedenteFamiliar a) {
         obtenerEntidadPorDocumento(numeroDocumento).addAntecedenteFamiliar(a);
@@ -187,6 +212,8 @@ public class PacienteService {
         return List.copyOf(obtenerEntidadPorDocumento(numeroDocumento).getAntecedentesFamiliares());
     }
 
+    @Auditable(entidad = "Alergia", operacion = OperacionAuditoria.REGISTRO,
+            detalle = "'Se registró una alergia del paciente ' + #numeroDocumento")
     @Transactional
     public Alergia registrarAlergia(String numeroDocumento, Alergia a) {
         obtenerEntidadPorDocumento(numeroDocumento).addAlergia(a);
