@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Auditoría</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: Arial, sans-serif; background: #f0f2f5; }
+        .navbar { background: #1a73e8; padding: 14px 30px; display: flex; align-items: center; gap: 20px; }
+        .navbar h1 { color: white; font-size: 20px; flex: 1; }
+        .navbar a { color: white; text-decoration: none; padding: 8px 16px; border-radius: 6px; font-size: 14px; }
+        .navbar a:hover { background: rgba(255,255,255,0.2); }
+        .container { margin: 24px; }
+        .card { background: white; border-radius: 12px; padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        h2 { color: #1a73e8; margin-bottom: 16px; font-size: 20px; }
+        .filtros { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; align-items: end; }
+        .form-group { display: flex; flex-direction: column; gap: 4px; }
+        .form-group label { font-size: 13px; color: #555; font-weight: bold; }
+        .form-group input, .form-group select { padding: 8px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; }
+        .btn { padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: bold; }
+        .btn-search { background: #1a73e8; color: white; }
+        .btn-sec { background: #e8eaf6; color: #3949ab; }
+        .btn:disabled { opacity: .5; cursor: default; }
+        table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        th { background: #1a73e8; color: white; padding: 10px; text-align: left; white-space: nowrap; }
+        td { padding: 10px; border-bottom: 1px solid #eee; vertical-align: top; }
+        tr:hover { background: #f8f9ff; }
+        .badge { padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: bold; white-space: nowrap; }
+        .op-REGISTRO { background: #e6f4ea; color: #2d8f47; }
+        .op-MODIFICACION { background: #e8f0fe; color: #1a73e8; }
+        .op-ELIMINACION { background: #fce8e6; color: #c5221f; }
+        .op-ACTIVACION { background: #e0f2f1; color: #00695c; }
+        .op-DESACTIVACION { background: #fff3e0; color: #e65100; }
+        .rol { color: #888; font-size: 11px; }
+        .paginacion { display: flex; gap: 12px; align-items: center; justify-content: flex-end; margin-top: 16px; font-size: 13px; color: #555; }
+        #msg { padding: 10px; border-radius: 6px; margin-bottom: 12px; display: none; background: #fce8e6; color: #c5221f; }
+    </style>
+</head>
+<body>
+<nav th:replace="~{fragments/navbar :: navbar}"></nav>
+<div class="container">
+
+    <div class="card">
+        <h2>Auditoría del Sistema</h2>
+        <div id="msg"></div>
+        <div class="filtros">
+            <div class="form-group">
+                <label for="fUsuario">Usuario</label>
+                <input type="text" id="fUsuario" placeholder="admin">
+            </div>
+            <div class="form-group">
+                <label for="fEntidad">Entidad</label>
+                <select id="fEntidad"><option value="">Todas</option></select>
+            </div>
+            <div class="form-group">
+                <label for="fOperacion">Operación</label>
+                <select id="fOperacion"><option value="">Todas</option></select>
+            </div>
+            <div class="form-group">
+                <label for="fDesde">Desde</label>
+                <input type="date" id="fDesde">
+            </div>
+            <div class="form-group">
+                <label for="fHasta">Hasta</label>
+                <input type="date" id="fHasta">
+            </div>
+            <div class="form-group">
+                <label for="fTamanio">Por página</label>
+                <select id="fTamanio"><option>20</option><option>50</option><option>100</option></select>
+            </div>
+            <button class="btn btn-search" onclick="buscar(0)">Filtrar</button>
+            <button class="btn btn-sec" onclick="limpiar()">Limpiar</button>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>Registros</h2>
+        <table>
+            <thead>
+                <tr><th>Fecha y hora</th><th>Usuario</th><th>Operación</th><th>Entidad</th><th>Id registro</th><th>Detalle</th></tr>
+            </thead>
+            <tbody id="bodyAuditoria">
+                <tr><td colspan="6" style="text-align:center;color:#888">Cargando...</td></tr>
+            </tbody>
+        </table>
+        <div class="paginacion">
+            <span id="infoPagina"></span>
+            <button class="btn btn-sec" id="btnAnterior" onclick="buscar(paginaActual - 1)">Anterior</button>
+            <button class="btn btn-sec" id="btnSiguiente" onclick="buscar(paginaActual + 1)">Siguiente</button>
+        </div>
+    </div>
+</div>
+
+<script th:src="@{/js/api.js}"></script>
+<script>
+let paginaActual = 0;
+
+function escapar(texto) {
+    const div = document.createElement('div');
+    div.textContent = texto ?? '';
+    return div.innerHTML;
+}
+
+function mostrarError(texto) {
+    const msg = document.getElementById('msg');
+    msg.textContent = texto;
+    msg.style.display = texto ? 'block' : 'none';
+}
+
+async function cargarOpciones(url, selectId) {
+    const res = await apiFetch(url);
+    if (!res.ok) return;
+    const valores = await res.json();
+    document.getElementById(selectId).innerHTML = '<option value="">Todas</option>'
+        + valores.map(v => `<option value="${escapar(v)}">${escapar(v)}</option>`).join('');
+}
+
+async function buscar(pagina) {
+    if (pagina < 0) return;
+    const params = new URLSearchParams({ page: pagina, size: document.getElementById('fTamanio').value });
+    const filtros = { usuario: 'fUsuario', entidad: 'fEntidad', operacion: 'fOperacion', desde: 'fDesde', hasta: 'fHasta' };
+    for (const [param, id] of Object.entries(filtros)) {
+        const valor = document.getElementById(id).value.trim();
+        if (valor) params.set(param, valor);
+    }
+    const res = await apiFetch(`/api/auditoria?${params}`);
+    if (!res.ok) {
+        mostrarError(await res.text() || 'No se pudo consultar la auditoría.');
+        return;
+    }
+    mostrarError('');
+    const datos = await res.json();
+    paginaActual = datos.pagina;
+    renderTabla(datos.contenido);
+    const total = Math.max(datos.totalPaginas, 1);
+    document.getElementById('infoPagina').textContent =
+        `Página ${datos.pagina + 1} de ${total} · ${datos.totalElementos} registro(s)`;
+    document.getElementById('btnAnterior').disabled = datos.pagina <= 0;
+    document.getElementById('btnSiguiente').disabled = datos.pagina + 1 >= datos.totalPaginas;
+}
+
+function renderTabla(lista) {
+    const tbody = document.getElementById('bodyAuditoria');
+    if (!lista.length) {
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#888">Sin resultados</td></tr>';
+        return;
+    }
+    tbody.innerHTML = lista.map(a => `
+        <tr>
+            <td style="white-space:nowrap">${escapar(new Date(a.fechaHora).toLocaleString('es-PE'))}</td>
+            <td>${escapar(a.usuario)}${a.rolUsuario ? `<br><span class="rol">${escapar(a.rolUsuario)}</span>` : ''}</td>
+            <td><span class="badge op-${escapar(a.operacion)}">${escapar(a.operacion)}</span></td>
+            <td>${escapar(a.entidad)}</td>
+            <td>${escapar(a.idRegistro)}</td>
+            <td>${escapar(a.detalle)}</td>
+        </tr>
+    `).join('');
+}
+
+function limpiar() {
+    ['fUsuario', 'fEntidad', 'fOperacion', 'fDesde', 'fHasta'].forEach(id => document.getElementById(id).value = '');
+    buscar(0);
+}
+
+cargarOpciones('/api/auditoria/entidades', 'fEntidad');
+cargarOpciones('/api/auditoria/operaciones', 'fOperacion');
+buscar(0);
+</script>
+</body>
+</html>

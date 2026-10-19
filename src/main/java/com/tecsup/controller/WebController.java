@@ -43,4 +43,7 @@ public class WebController {
 
     @GetMapping("/bitacora")
     public String bitacora() { return "bitacora"; }
+
+    @GetMapping("/auditoria")
+    public String auditoria() { return "auditoria"; }
 }
