@@ -2,11 +2,12 @@
 <html xmlns:th="http://www.thymeleaf.org" lang="es">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Usuarios</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: Arial, sans-serif; background: #f0f2f5; }
-        .navbar { background: #1a73e8; padding: 14px 30px; display: flex; align-items: center; gap: 20px; }
+        .navbar { background: #1a73e8; padding: 14px 30px; display: flex; flex-wrap: wrap; align-items: center; gap: 20px; }
         .navbar h1 { color: white; font-size: 20px; flex: 1; }
         .navbar a { color: white; text-decoration: none; padding: 8px 16px; border-radius: 6px; font-size: 14px; }
         .navbar a:hover { background: rgba(255,255,255,0.2); }
@@ -17,25 +18,52 @@
         .form-group { display: flex; flex-direction: column; gap: 4px; }
         .form-group label { font-size: 13px; color: #555; font-weight: bold; }
         .form-group input, .form-group select { padding: 8px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; }
+        .form-group input[readonly] { background: #f5f5f5; color: #555; }
+        .form-group input.invalido, .form-group select.invalido { border-color: #c5221f; }
+        .error-campo { font-size: 12px; color: #c5221f; min-height: 14px; }
+        .hint { font-size: 11px; color: #888; }
+        .acciones-form { margin-top: 16px; display: flex; gap: 10px; flex-wrap: wrap; }
         .btn { padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: bold; }
+        .btn:disabled { opacity: .5; cursor: not-allowed; }
         .btn-primary { background: #1a73e8; color: white; }
         .btn-search { background: #34a853; color: white; }
-        .search-row { display: flex; gap: 10px; }
-        .search-row select, .search-row input { padding: 8px 12px; border: 1px solid #ddd; border-radius: 6px; }
+        .btn-sec { background: #e8eaf6; color: #3949ab; }
+        .btn-cerrar { background: #888; color: white; }
+        .btn-peligro { background: #e53935; color: white; }
+        .btn-fila { padding: 4px 10px; font-size: 12px; color: white; }
+        .btn-editar { background: #1a73e8; }
+        .btn-desactivar { background: #757575; }
+        .btn-activar { background: #34a853; }
+        .filtros { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; align-items: end; }
+        .tabla-scroll { overflow-x: auto; }
         table { width: 100%; border-collapse: collapse; font-size: 13px; }
-        th { background: #1a73e8; color: white; padding: 10px; text-align: left; }
+        th { background: #1a73e8; color: white; padding: 10px; text-align: left; white-space: nowrap; }
         td { padding: 10px; border-bottom: 1px solid #eee; }
+        td.celda-acciones { white-space: nowrap; display: flex; gap: 6px; }
+        td.vacio { text-align: center; color: #888; }
         tr:hover { background: #f8f9ff; }
-        .badge { padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: bold; }
-        .badge-admin { background: #e8eaf6; color: #3949ab; }
+        tr.fila-propia { background: #fffde7; }
+        .badge { padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: bold; white-space: nowrap; }
+        .badge-rol { background: #e8eaf6; color: #3949ab; }
         .badge-medico { background: #e0f2f1; color: #00695c; }
-        .badge-enfermera { background: #fce4ec; color: #c2185b; }
-        .badge-recepcion, .badge-recepcionista { background: #fff3e0; color: #e65100; }
-        .badge-administrador { background: #e8eaf6; color: #3949ab; }
+        .badge-recepcionista { background: #fff3e0; color: #e65100; }
+        .badge-activo { background: #e6f4ea; color: #2d8f47; }
         .badge-inactivo { background: #eee; color: #777; }
-        #msg { padding: 10px; border-radius: 6px; margin-bottom: 12px; display: none; }
-        .msg-ok { background: #e6f4ea; color: #2d8f47; }
-        .msg-err { background: #fce8e6; color: #c5221f; }
+        .tu { font-size: 11px; color: #888; }
+        .msg { padding: 10px; border-radius: 6px; margin-bottom: 12px; display: none; }
+        .msg-ok { display: block; background: #e6f4ea; color: #2d8f47; }
+        .msg-err { display: block; background: #fce8e6; color: #c5221f; }
+        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; z-index: 100; }
+        .modal-overlay.abierto { display: flex; }
+        .modal-box { background: white; border-radius: 12px; padding: 24px; width: min(640px, 92vw); max-height: 85vh; overflow-y: auto; }
+        .modal-box.pequeno { width: min(440px, 92vw); }
+        .modal-box p { font-size: 14px; color: #333; margin-bottom: 8px; }
+        @media (max-width: 640px) {
+            .container { margin: 12px; }
+            .card { padding: 16px; }
+            .form-grid { grid-template-columns: 1fr; }
+            .navbar { padding: 12px 16px; gap: 8px; }
+        }
     </style>
 </head>
 <body>
@@ -44,170 +72,149 @@
 
     <div class="card">
         <h2>Registrar Usuario</h2>
-        <div id="msg"></div>
-        <div class="form-grid">
-            <div class="form-group">
-                <label>Nombre de Usuario</label>
-                <input type="text" id="nombreUsuario" placeholder="medico01">
+        <div id="msgRegistro" class="msg" role="status" aria-live="polite"></div>
+        <form id="formRegistro" novalidate autocomplete="off">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="regNombreUsuario">Nombre de usuario *</label>
+                    <input type="text" id="regNombreUsuario" name="nombreUsuario" maxlength="100" placeholder="medico01" aria-describedby="err-regNombreUsuario">
+                    <span class="error-campo" id="err-regNombreUsuario"></span>
+                </div>
+                <div class="form-group">
+                    <label for="regNombres">Nombres *</label>
+                    <input type="text" id="regNombres" name="nombres" maxlength="150" placeholder="Juan Pérez" aria-describedby="err-regNombres">
+                    <span class="error-campo" id="err-regNombres"></span>
+                </div>
+                <div class="form-group">
+                    <label for="regCorreo">Correo (opcional)</label>
+                    <input type="email" id="regCorreo" name="correo" maxlength="150" placeholder="juan@hospital.pe" aria-describedby="err-regCorreo">
+                    <span class="error-campo" id="err-regCorreo"></span>
+                </div>
+                <div class="form-group">
+                    <label for="regRol">Rol *</label>
+                    <select id="regRol" name="rolId" aria-describedby="err-regRol">
+                        <option value="">-- Seleccionar --</option>
+                    </select>
+                    <span class="error-campo" id="err-regRol"></span>
+                </div>
+                <div class="form-group">
+                    <label for="regPassword">Contraseña * (8 a 72 caracteres)</label>
+                    <input type="password" id="regPassword" name="password" maxlength="72" autocomplete="new-password" aria-describedby="err-regPassword">
+                    <span class="error-campo" id="err-regPassword"></span>
+                </div>
+                <div class="form-group">
+                    <label for="regConfirmar">Confirmar contraseña *</label>
+                    <input type="password" id="regConfirmar" name="confirmar" maxlength="72" autocomplete="new-password" aria-describedby="err-regConfirmar">
+                    <span class="error-campo" id="err-regConfirmar"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label>Nombres</label>
-                <input type="text" id="nombres" placeholder="Juan Pérez">
+            <div class="acciones-form">
+                <button type="submit" class="btn btn-primary" id="btnRegistrar">Registrar usuario</button>
+                <button type="reset" class="btn btn-sec">Limpiar</button>
             </div>
-            <div class="form-group">
-                <label>Correo (opcional)</label>
-                <input type="email" id="correo" placeholder="juan@hospital.pe">
-            </div>
-            <div class="form-group">
-                <label>Contraseña (mínimo 8 caracteres)</label>
-                <input type="password" id="password" autocomplete="new-password">
-            </div>
-            <div class="form-group">
-                <label>Rol</label>
-                <select id="rol"></select>
-            </div>
-        </div>
-        <br>
-        <button class="btn btn-primary" onclick="registrarUsuario()">Registrar Usuario</button>
+        </form>
     </div>
 
     <div class="card">
-        <h2>Filtrar por Rol</h2>
-        <div class="search-row">
-            <select id="filtroRol">
-                <option value="">Todos</option>
-            </select>
-            <button class="btn btn-search" onclick="filtrar()">Filtrar</button>
-            <button class="btn btn-primary" onclick="listarTodos()">Ver Todos</button>
-        </div>
+        <h2>Filtros</h2>
+        <form id="formFiltros" class="filtros" role="search">
+            <div class="form-group">
+                <label for="filtroRol">Rol</label>
+                <select id="filtroRol"><option value="">Todos</option></select>
+            </div>
+            <div class="form-group">
+                <label for="filtroEstado">Estado</label>
+                <select id="filtroEstado">
+                    <option value="">Todos</option>
+                    <option value="true">Activos</option>
+                    <option value="false">Inactivos</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="filtroTexto">Buscar</label>
+                <input type="search" id="filtroTexto" placeholder="usuario, nombres o correo">
+            </div>
+            <button type="submit" class="btn btn-search">Filtrar</button>
+            <button type="button" class="btn btn-sec" id="btnLimpiarFiltros">Ver todos</button>
+        </form>
     </div>
 
     <div class="card">
         <h2>Lista de Usuarios</h2>
-        <table>
-            <thead>
-                <tr><th>Id</th><th>Usuario</th><th>Nombres</th><th>Correo</th><th>Rol</th><th>Estado</th><th>Acciones</th></tr>
-            </thead>
-            <tbody id="bodyUsuarios">
-                <tr><td colspan="7" style="text-align:center;color:#888">Cargando...</td></tr>
-            </tbody>
-        </table>
+        <div id="msgLista" class="msg" role="status" aria-live="polite"></div>
+        <div class="tabla-scroll">
+            <table>
+                <thead>
+                    <tr><th>Id</th><th>Usuario</th><th>Nombres</th><th>Correo</th><th>Rol</th><th>Estado</th><th>Acciones</th></tr>
+                </thead>
+                <tbody id="bodyUsuarios" aria-live="polite">
+                    <tr><td colspan="7" class="vacio">Cargando...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de edición -->
+<div class="modal-overlay" id="modalEditar">
+    <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="tituloEditar">
+        <h2 id="tituloEditar">Editar usuario</h2>
+        <div id="msgEditar" class="msg" role="status" aria-live="polite"></div>
+        <form id="formEditar" novalidate autocomplete="off">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="edNombreUsuario">Nombre de usuario</label>
+                    <input type="text" id="edNombreUsuario" readonly aria-describedby="hint-edNombreUsuario">
+                    <span class="hint" id="hint-edNombreUsuario">No se puede modificar.</span>
+                </div>
+                <div class="form-group">
+                    <label for="edNombres">Nombres *</label>
+                    <input type="text" id="edNombres" maxlength="150" aria-describedby="err-edNombres">
+                    <span class="error-campo" id="err-edNombres"></span>
+                </div>
+                <div class="form-group">
+                    <label for="edCorreo">Correo (opcional)</label>
+                    <input type="email" id="edCorreo" maxlength="150" aria-describedby="err-edCorreo">
+                    <span class="error-campo" id="err-edCorreo"></span>
+                </div>
+                <div class="form-group">
+                    <label for="edRol">Rol *</label>
+                    <select id="edRol" aria-describedby="err-edRol"></select>
+                    <span class="error-campo" id="err-edRol"></span>
+                </div>
+                <div class="form-group">
+                    <label for="edPassword">Nueva contraseña (opcional)</label>
+                    <input type="password" id="edPassword" maxlength="72" autocomplete="new-password" aria-describedby="err-edPassword">
+                    <span class="error-campo" id="err-edPassword"></span>
+                </div>
+                <div class="form-group">
+                    <label for="edConfirmar">Confirmar nueva contraseña</label>
+                    <input type="password" id="edConfirmar" maxlength="72" autocomplete="new-password" aria-describedby="err-edConfirmar">
+                    <span class="error-campo" id="err-edConfirmar"></span>
+                </div>
+            </div>
+            <div class="acciones-form">
+                <button type="submit" class="btn btn-primary" id="btnGuardar">Guardar cambios</button>
+                <button type="button" class="btn btn-cerrar" data-cerrar>Cancelar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal de confirmación (activar / desactivar) -->
+<div class="modal-overlay" id="modalConfirmar">
+    <div class="modal-box pequeno" role="alertdialog" aria-modal="true" aria-labelledby="tituloConfirmar" aria-describedby="textoConfirmar">
+        <h2 id="tituloConfirmar">Confirmar</h2>
+        <p id="textoConfirmar"></p>
+        <div id="msgConfirmar" class="msg" role="status" aria-live="polite"></div>
+        <div class="acciones-form">
+            <button type="button" class="btn btn-primary" id="btnConfirmar">Confirmar</button>
+            <button type="button" class="btn btn-cerrar" data-cerrar>Cancelar</button>
+        </div>
     </div>
 </div>
 
 <script th:src="@{/js/api.js}"></script>
-<script>
-const API = '';
-
-function rolActual() {
-    return localStorage.getItem('sesionRol') || 'ADMIN';
-}
-function cambiarRol() {
-    localStorage.setItem('sesionRol', document.getElementById('selRol').value);
-}
-function headersConRol(conJson) {
-    const h = { 'X-Rol': rolActual() };
-    if (conJson) h['Content-Type'] = 'application/json';
-    return h;
-}
-
-async function registrarUsuario() {
-    const body = {
-        nombreUsuario: document.getElementById('nombreUsuario').value,
-        nombres: document.getElementById('nombres').value,
-        correo: document.getElementById('correo').value || null,
-        password: document.getElementById('password').value,
-        rolId: Number(document.getElementById('rol').value) || null
-    };
-    const res = await apiFetch(`${API}/api/usuarios`, {
-        method: 'POST',
-        headers: headersConRol(true),
-        body: JSON.stringify(body)
-    });
-    const msg = document.getElementById('msg');
-    if (res.ok) {
-        msg.className = 'msg-ok'; msg.style.display = 'block';
-        msg.textContent = 'Usuario registrado correctamente.';
-        document.getElementById('password').value = '';
-        listarTodos();
-    } else {
-        msg.className = 'msg-err'; msg.style.display = 'block';
-        msg.textContent = await res.text() || 'Error al registrar usuario.';
-    }
-}
-
-async function listarTodos() {
-    const res = await apiFetch(`${API}/api/usuarios`, { headers: headersConRol(false) });
-    if (!res.ok) return alert(await res.text());
-    const data = await res.json();
-    renderTabla(data);
-}
-
-async function filtrar() {
-    const rolId = document.getElementById('filtroRol').value;
-    const url = rolId ? `${API}/api/usuarios?rolId=${rolId}` : `${API}/api/usuarios`;
-    const res = await apiFetch(url, { headers: headersConRol(false) });
-    if (!res.ok) return alert(await res.text());
-    const data = await res.json();
-    renderTabla(data);
-}
-
-async function eliminarUsuario(nombreUsuario) {
-    if (!confirm(`¿Eliminar al usuario "${nombreUsuario}"?`)) return;
-    const res = await apiFetch(`${API}/api/usuarios/${encodeURIComponent(nombreUsuario)}`, {
-        method: 'DELETE',
-        headers: headersConRol(false)
-    });
-    if (res.ok) {
-        listarTodos();
-    } else {
-        alert(await res.text() || 'Error al eliminar usuario.');
-    }
-}
-
-async function cambiarEstado(id, activo) {
-    const res = await apiFetch(`${API}/api/usuarios/${id}/estado`, {
-        method: 'PATCH',
-        headers: headersConRol(true),
-        body: JSON.stringify({ activo })
-    });
-    if (res.ok) listarTodos();
-    else alert(await res.text() || 'Error al cambiar el estado.');
-}
-
-async function cargarRoles() {
-    const res = await apiFetch(`${API}/api/roles?activo=true`, { headers: headersConRol(false) });
-    if (!res.ok) return;
-    const roles = await res.json();
-    const opciones = roles.map(r => `<option value="${r.id}">${r.nombre}</option>`).join('');
-    document.getElementById('rol').innerHTML = opciones;
-    document.getElementById('filtroRol').innerHTML = '<option value="">Todos</option>' + opciones;
-}
-
-function renderTabla(lista) {
-    const tbody = document.getElementById('bodyUsuarios');
-    if (!lista.length) {
-        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#888">Sin resultados</td></tr>';
-        return;
-    }
-    tbody.innerHTML = lista.map(u => `
-        <tr>
-            <td>${u.id}</td>
-            <td>${u.nombreUsuario}</td>
-            <td>${u.nombres ?? ''}</td>
-            <td>${u.correo ?? ''}</td>
-            <td><span class="badge badge-${u.rolNombre?.toLowerCase()}">${u.rolNombre}</span></td>
-            <td><span class="badge ${u.activo ? 'badge-medico' : 'badge-inactivo'}">${u.activo ? 'Activo' : 'Inactivo'}</span></td>
-            <td>
-                <button class="btn" style="padding:4px 10px;font-size:12px;background:#757575;color:white" onclick="cambiarEstado(${u.id}, ${!u.activo})">${u.activo ? 'Desactivar' : 'Activar'}</button>
-                <button class="btn" style="padding:4px 10px;font-size:12px;background:#e53935;color:white" onclick="eliminarUsuario('${u.nombreUsuario}')">Eliminar</button>
-            </td>
-        </tr>
-    `).join('');
-}
-
-cargarRoles();
-listarTodos();
-</script>
+<script th:src="@{/js/usuarios.js}"></script>
 </body>
 </html>

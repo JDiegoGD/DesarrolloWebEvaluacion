@@ -17,6 +17,7 @@ import org.springframework.web.context.WebApplicationContext;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.hamcrest.Matchers.containsString;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
@@ -71,7 +72,9 @@ class SeguridadMatrizTest {
     void administrador_accedeAAdministracionYSinCsrfRecibe403() throws Exception {
         mvc.perform(get("/api/usuarios")).andExpect(status().isOk());
         mvc.perform(get("/api/roles")).andExpect(status().isOk());
-        mvc.perform(get("/usuarios")).andExpect(status().isOk());
+        mvc.perform(get("/usuarios"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("/js/usuarios.js")));
         mvc.perform(get("/bitacora")).andExpect(status().isOk());
         // Escritura sin token CSRF
         mvc.perform(post("/api/catalogos/tipo-documento").contentType(MediaType.APPLICATION_JSON).content("{}"))
@@ -116,6 +119,9 @@ class SeguridadMatrizTest {
         mvc.perform(get("/api/pacientes/documento/" + DOC + "/bitacora")).andExpect(status().isForbidden());
         mvc.perform(get("/api/usuarios")).andExpect(status().isForbidden());
         mvc.perform(get("/bitacora")).andExpect(status().isForbidden());
+        mvc.perform(get("/usuarios"))
+                .andExpect(status().isForbidden())
+                .andExpect(forwardedUrl("/acceso-denegado"));
     }
 
     // --- @PreAuthorize: el permiso no depende solo de la URL
