@@ -7,11 +7,13 @@ import com.tecsup.service.RolService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 // Sin DELETE: los roles se desactivan. Errores (400/404/409) en GlobalExceptionHandler
 @RestController
+@PreAuthorize("hasRole('ADMINISTRADOR')")
 @RequestMapping("/api/roles")
 public class RolController {
 

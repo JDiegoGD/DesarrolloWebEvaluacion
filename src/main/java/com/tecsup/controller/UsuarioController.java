@@ -10,11 +10,13 @@ import jakarta.validation.groups.Default;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 // Errores (400/404/409) los resuelve GlobalExceptionHandler
 @RestController
+@PreAuthorize("hasRole('ADMINISTRADOR')")
 @RequestMapping("/api/usuarios")
 public class UsuarioController {
 

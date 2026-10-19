@@ -20,6 +20,10 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Integer> {
     @EntityGraph(attributePaths = "rol")
     Optional<Usuario> findByNombreUsuario(String nombreUsuario);
 
+    // Login: sin distinguir mayúsculas y con el rol cargado
+    @EntityGraph(attributePaths = "rol")
+    Optional<Usuario> findByNombreUsuarioIgnoreCase(String nombreUsuario);
+
     boolean existsByNombreUsuario(String nombreUsuario);
     boolean existsByCorreo(String correo);
     boolean existsByCorreoAndIdUsuarioNot(String correo, Integer idUsuario);

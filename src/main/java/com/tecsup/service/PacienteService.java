@@ -11,13 +11,13 @@ import com.tecsup.model.Usuario;
 import com.tecsup.repository.PacienteRepository;
 import com.tecsup.repository.BitacoraPacienteRepository;
 import com.tecsup.repository.TipoDocumentoRepository;
-import com.tecsup.repository.UsuarioRepository;
 import com.tecsup.repository.AtencionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -26,9 +26,9 @@ public class PacienteService {
 
     @Autowired private PacienteRepository pacienteRepository;
     @Autowired private BitacoraPacienteRepository bitacoraRepository;
-    @Autowired private UsuarioRepository usuarioRepository;
     @Autowired private AtencionRepository atencionRepository;
     @Autowired private TipoDocumentoRepository tipoDocumentoRepository;
+    @Autowired private UsuarioActualService usuarioActualService;
 
     // RF-PAC-01 + RF-PAC-02
     @Transactional
@@ -93,10 +93,10 @@ public class PacienteService {
 
     // RF-PAC-08
     @Transactional
-    public Paciente actualizarPaciente(String numeroDocumento, Paciente datos, String nombreUsuario) {
+    // La bitácora registra siempre al usuario autenticado (no se acepta un usuario por parámetro)
+    public Paciente actualizarPaciente(String numeroDocumento, Paciente datos) {
         Paciente e = obtenerEntidadPorDocumento(numeroDocumento);
-        Usuario u = usuarioRepository.findByNombreUsuario(nombreUsuario)
-                .orElseThrow(() -> new RecursoNoEncontradoException("Usuario no encontrado."));
+        Usuario u = usuarioActualService.obtener();
 
         String correoNuevo = datos.getCorreoElectronico();
         if (correoNuevo != null && !correoNuevo.isBlank() && !correoNuevo.equals(e.getCorreoElectronico())
@@ -139,10 +139,10 @@ public class PacienteService {
         }
     }
 
-    // RF-PAC-12
+    // RF-PAC-12: solo campos que cambiaron (null y "" se consideran iguales)
     public void registrarBitacora(Paciente paciente, Usuario usuario,
                                   String campo, String anterior, String nuevo) {
-        if (anterior != null && anterior.equals(nuevo)) return;
+        if (Objects.equals(vacioANull(anterior), vacioANull(nuevo))) return;
         BitacoraPaciente log = new BitacoraPaciente();
         log.setPaciente(paciente);
         log.setUsuario(usuario);
@@ -152,6 +152,10 @@ public class PacienteService {
         log.setValorAnterior(anterior);
         log.setValorNuevo(nuevo);
         bitacoraRepository.save(log);
+    }
+
+    private static String vacioANull(String valor) {
+        return (valor == null || valor.isBlank()) ? null : valor;
     }
 
     @Transactional(readOnly = true)

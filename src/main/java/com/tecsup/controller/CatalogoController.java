@@ -8,6 +8,7 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
@@ -23,6 +24,7 @@ public class CatalogoController {
         return ResponseEntity.ok(tipoDocRepo.findAll());
     }
 
+    @PreAuthorize("hasRole('ADMINISTRADOR')")
     @PostMapping("/tipo-documento")
     public ResponseEntity<TipoDocumento> crearTipo(@Valid @RequestBody TipoDocumento td) {
         return ResponseEntity.status(HttpStatus.CREATED).body(tipoDocRepo.save(td));
@@ -33,6 +35,7 @@ public class CatalogoController {
         return ResponseEntity.ok(ubigeoRepo.findAll());
     }
 
+    @PreAuthorize("hasRole('ADMINISTRADOR')")
     @PostMapping("/ubigeo")
     public ResponseEntity<Ubigeo> crearUbigeo(@Valid @RequestBody Ubigeo u) {
         return ResponseEntity.status(HttpStatus.CREATED).body(ubigeoRepo.save(u));

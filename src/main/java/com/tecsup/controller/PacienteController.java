@@ -7,6 +7,7 @@ import com.tecsup.exception.RecursoNoEncontradoException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
@@ -56,16 +57,18 @@ public class PacienteController {
         return ResponseEntity.ok(pacienteService.listarTodos());
     }
 
-    // RF-PAC-08: actualizar
+    // RF-PAC-08: actualizar. ?nombreUsuario= se sigue aceptando por compatibilidad pero se IGNORA:
+    // la bitácora registra al usuario de la sesión (evita suplantación)
     @PutMapping("/documento/{numeroDocumento}")
-    public ResponseEntity<?> actualizarPaciente(@PathVariable String numeroDocumento,
-                                                @RequestBody Paciente datos, @RequestParam String nombreUsuario) {
-        try { return ResponseEntity.ok(pacienteService.actualizarPaciente(numeroDocumento, datos, nombreUsuario)); }
+    public ResponseEntity<?> actualizarPaciente(@PathVariable String numeroDocumento, @RequestBody Paciente datos,
+                                                @RequestParam(name = "nombreUsuario", required = false) String ignorado) {
+        try { return ResponseEntity.ok(pacienteService.actualizarPaciente(numeroDocumento, datos)); }
         catch (RecursoNoEncontradoException | DataIntegrityViolationException e) { throw e; }
         catch (RuntimeException e) { return ResponseEntity.badRequest().body(e.getMessage()); }
     }
 
     // RF-PAC-13: eliminar lógico
+    @PreAuthorize("hasRole('ADMINISTRADOR')")
     @DeleteMapping("/documento/{numeroDocumento}")
     public ResponseEntity<?> eliminarPaciente(@PathVariable String numeroDocumento) {
         try {
@@ -79,36 +82,43 @@ public class PacienteController {
     }
 
     // RF-PAC-12: bitácora — INT-6
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'MEDICO')")
     @GetMapping("/documento/{numeroDocumento}/bitacora")
     public ResponseEntity<List<BitacoraPaciente>> obtenerBitacora(@PathVariable String numeroDocumento) {
         return ResponseEntity.ok(pacienteService.obtenerBitacora(numeroDocumento));
     }
 
     // Antecedentes y alergias del paciente (exigen un paciente existente: 404 si no existe)
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'MEDICO')")
     @PostMapping("/documento/{numeroDocumento}/antecedentes-personales")
     public ResponseEntity<AntecedentePersonal> registrarAntecedentePersonal(@PathVariable String numeroDocumento,
                                                                             @RequestBody AntecedentePersonal a) {
         return ResponseEntity.status(HttpStatus.CREATED).body(pacienteService.registrarAntecedentePersonal(numeroDocumento, a));
     }
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'MEDICO')")
     @GetMapping("/documento/{numeroDocumento}/antecedentes-personales")
     public ResponseEntity<List<AntecedentePersonal>> listarAntecedentesPersonales(@PathVariable String numeroDocumento) {
         return ResponseEntity.ok(pacienteService.listarAntecedentesPersonales(numeroDocumento));
     }
 
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'MEDICO')")
     @PostMapping("/documento/{numeroDocumento}/antecedentes-familiares")
     public ResponseEntity<AntecedenteFamiliar> registrarAntecedenteFamiliar(@PathVariable String numeroDocumento,
                                                                             @RequestBody AntecedenteFamiliar a) {
         return ResponseEntity.status(HttpStatus.CREATED).body(pacienteService.registrarAntecedenteFamiliar(numeroDocumento, a));
     }
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'MEDICO')")
     @GetMapping("/documento/{numeroDocumento}/antecedentes-familiares")
     public ResponseEntity<List<AntecedenteFamiliar>> listarAntecedentesFamiliares(@PathVariable String numeroDocumento) {
         return ResponseEntity.ok(pacienteService.listarAntecedentesFamiliares(numeroDocumento));
     }
 
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'MEDICO')")
     @PostMapping("/documento/{numeroDocumento}/alergias")
     public ResponseEntity<Alergia> registrarAlergia(@PathVariable String numeroDocumento, @RequestBody Alergia a) {
         return ResponseEntity.status(HttpStatus.CREATED).body(pacienteService.registrarAlergia(numeroDocumento, a));
     }
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'MEDICO')")
     @GetMapping("/documento/{numeroDocumento}/alergias")
     public ResponseEntity<List<Alergia>> listarAlergias(@PathVariable String numeroDocumento) {
         return ResponseEntity.ok(pacienteService.listarAlergias(numeroDocumento));
