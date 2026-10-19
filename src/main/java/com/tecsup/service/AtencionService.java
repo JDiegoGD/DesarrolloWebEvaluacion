@@ -5,6 +5,8 @@ import com.tecsup.model.Paciente;
 import com.tecsup.model.Usuario;
 import com.tecsup.repository.AtencionRepository;
 import com.tecsup.exception.RecursoNoEncontradoException;
+import com.tecsup.exception.SolicitudInvalidaException;
+import com.tecsup.model.Rol;
 import com.tecsup.repository.PacienteRepository;
 import com.tecsup.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,6 +40,11 @@ public class AtencionService {
         if (atencion.getIdMedico() != null) {
             Usuario medico = usuarioRepository.findById(atencion.getIdMedico())
                     .orElseThrow(() -> new RecursoNoEncontradoException("Médico no encontrado (id " + atencion.getIdMedico() + ")."));
+            if (!Rol.MEDICO.equals(medico.getRol().getNombre()))
+                throw new SolicitudInvalidaException("El usuario '" + medico.getNombreUsuario()
+                        + "' no tiene el rol MEDICO (tiene " + medico.getRol().getNombre() + ").");
+            if (!medico.isActivo())
+                throw new SolicitudInvalidaException("El médico '" + medico.getNombreUsuario() + "' está inactivo.");
             atencion.setMedico(medico);
         }
         return repository.save(atencion);
