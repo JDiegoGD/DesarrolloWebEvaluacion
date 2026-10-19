@@ -1,6 +1,7 @@
 package com.tecsup.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
@@ -16,6 +17,8 @@ public class BitacoraPaciente {
     @JoinColumn(name = "id_paciente", nullable = false)
     private Paciente paciente;
 
+    // Del usuario solo se expone nombreUsuario y rol
+    @JsonIgnoreProperties({"nombres", "correo", "activo"})
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_usuario", nullable = false)
     private Usuario usuario;

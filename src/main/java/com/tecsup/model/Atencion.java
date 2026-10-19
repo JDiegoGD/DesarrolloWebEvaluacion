@@ -1,6 +1,7 @@
 package com.tecsup.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
@@ -20,6 +21,8 @@ public class Atencion {
     private Paciente paciente;
 
     // Médico que atiende; nullable para no romper las atenciones ya registradas
+    // Del usuario solo se expone nombreUsuario y rol
+    @JsonIgnoreProperties({"nombres", "correo", "activo"})
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_usuario_medico")
     private Usuario medico;
