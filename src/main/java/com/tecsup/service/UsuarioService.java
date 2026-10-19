@@ -107,6 +107,18 @@ public class UsuarioService {
         repository.flush();
     }
 
+    // Cambio de la propia contraseña (p. ej. las temporales "Cambiar123*" / "Admin123*")
+    @Transactional
+    public void cambiarPasswordPropia(String nombreUsuario, String actual, String nueva) {
+        Usuario u = repository.findByNombreUsuario(nombreUsuario)
+                .orElseThrow(() -> new RecursoNoEncontradoException("Usuario no encontrado."));
+        if (!passwordEncoder.matches(actual, u.getPassword()))
+            throw new SolicitudInvalidaException("La contraseña actual no es correcta.");
+        if (passwordEncoder.matches(nueva, u.getPassword()))
+            throw new SolicitudInvalidaException("La contraseña nueva debe ser distinta de la actual.");
+        u.setPassword(passwordEncoder.encode(nueva));
+    }
+
     private Usuario obtenerEntidad(Integer id) {
         return repository.findById(id)
                 .orElseThrow(() -> new RecursoNoEncontradoException("Usuario no encontrado (id " + id + ")."));
