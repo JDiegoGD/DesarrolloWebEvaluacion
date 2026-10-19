@@ -35,7 +35,7 @@
     </style>
 </head>
 <body>
-<nav th:replace="~{fragments/navbar :: navbar}"></nav>
+<nav th:replace="~{fragments/navbar :: navbar('seguros')}"></nav>
 <div class="container">
 
     <div class="card">
@@ -111,8 +111,6 @@
 
 <script th:src="@{/js/api.js}"></script>
 <script>
-const API = '';
-
 async function registrarSeguro() {
     const numDoc = document.getElementById('numDocPaciente').value.trim();
     const body = {
@@ -125,7 +123,7 @@ async function registrarSeguro() {
         fechaInicio: document.getElementById('fechaInicio').value,
         fechaVencimiento: document.getElementById('fechaVencimiento').value
     };
-    const res = await apiFetch(`${API}/api/seguros`, {
+    const res = await apiFetch(`/api/seguros`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body)
@@ -146,7 +144,7 @@ async function buscar() {
     const doc = document.getElementById('buscarDoc').value.trim();
     if (!doc) return;
     const tbody = document.getElementById('bodySeguros');
-    const res = await apiFetch(`${API}/api/seguros/paciente/${encodeURIComponent(doc)}`);
+    const res = await apiFetch(`/api/seguros/paciente/${encodeURIComponent(doc)}`);
     if (!res.ok) {
         tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:#c5221f">${await res.text()}</td></tr>`;
         return;

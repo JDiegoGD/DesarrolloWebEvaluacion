@@ -27,14 +27,16 @@
         .b4{background:linear-gradient(135deg,#f57c00,#e65100)}
         .b5{background:linear-gradient(135deg,#6a1b9a,#4a148c)}
         .b6{background:linear-gradient(135deg,#2e7d32,#1b5e20)}
+        .b7{background:linear-gradient(135deg,#455a64,#263238)}
     </style>
 </head>
 <body>
-<nav th:replace="~{fragments/navbar :: navbar}"></nav>
+<nav th:replace="~{fragments/navbar :: navbar('inicio')}"></nav>
 
 <div class="hero">
-    <h2>Bienvenido al Sistema de Pacientes</h2>
-    <p>Gestiona pacientes, atenciones, seguros y más desde este panel.</p>
+    <h2>Hola, <span id="saludoNombre" sec:authentication="name">usuario</span></h2>
+    <p>Rol: <strong th:text="${#strings.replace(#strings.listJoin(#authentication.authorities.?[authority.startsWith('ROLE_')].![authority], ', '), 'ROLE_', '')}">ROL</strong>.
+        Estos son los módulos a los que tienes acceso.</p>
 </div>
 
 <div class="cards">
@@ -90,21 +92,6 @@
         </div>
     </a>
 
-    <a class="card" href="/usuarios" sec:authorize-url="/usuarios">
-        <div class="card-banner b5">
-            <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <circle cx="22" cy="22" r="10" fill="white" fill-opacity="0.9"/>
-                <circle cx="42" cy="22" r="10" fill="white" fill-opacity="0.6"/>
-                <path d="M4 50c0-9.941 8.059-18 18-18s18 8.059 18 18" stroke="white" stroke-width="4" stroke-linecap="round" fill="none" fill-opacity="0.9"/>
-                <path d="M36 50c0-9.941 8.059-18 18-18" stroke="white" stroke-width="4" stroke-linecap="round" fill="none" fill-opacity="0.6"/>
-            </svg>
-        </div>
-        <div class="card-body">
-            <h3>Usuarios</h3>
-            <p>Control de acceso por rol</p>
-        </div>
-    </a>
-
     <a class="card" href="/bitacora" sec:authorize-url="/bitacora">
         <div class="card-banner b6">
             <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -120,6 +107,40 @@
         </div>
     </a>
 
+    <a class="card" href="/usuarios" sec:authorize-url="/usuarios">
+        <div class="card-banner b5">
+            <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="22" cy="22" r="10" fill="white" fill-opacity="0.9"/>
+                <circle cx="42" cy="22" r="10" fill="white" fill-opacity="0.6"/>
+                <path d="M4 50c0-9.941 8.059-18 18-18s18 8.059 18 18" stroke="white" stroke-width="4" stroke-linecap="round" fill="none" fill-opacity="0.9"/>
+                <path d="M36 50c0-9.941 8.059-18 18-18" stroke="white" stroke-width="4" stroke-linecap="round" fill="none" fill-opacity="0.6"/>
+            </svg>
+        </div>
+        <div class="card-body">
+            <h3>Usuarios</h3>
+            <p>Control de acceso por rol</p>
+        </div>
+    </a>
+
+    <a class="card" href="/auditoria" sec:authorize-url="/auditoria">
+        <div class="card-banner b7">
+            <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="28" cy="28" r="16" stroke="white" stroke-width="5" fill="none"/>
+                <line x1="40" y1="40" x2="54" y2="54" stroke="white" stroke-width="6" stroke-linecap="round"/>
+            </svg>
+        </div>
+        <div class="card-body">
+            <h3>Auditoría</h3>
+            <p>Operaciones registradas en el sistema</p>
+        </div>
+    </a>
+
 </div>
+
+<script th:src="@{/js/api.js}"></script>
+<script>
+    // El nombre de usuario ya viene del servidor; si hay nombres registrados se muestran en su lugar
+    obtenerCuenta().then(c => { if (c && c.nombres) document.getElementById('saludoNombre').textContent = c.nombres; });
+</script>
 </body>
 </html>

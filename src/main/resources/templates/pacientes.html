@@ -46,7 +46,7 @@
     </style>
 </head>
 <body>
-<nav th:replace="~{fragments/navbar :: navbar}"></nav>
+<nav th:replace="~{fragments/navbar :: navbar('pacientes')}"></nav>
 <div class="container">
 
     <div class="card">
@@ -157,12 +157,6 @@
                 </select>
             </div>
 
-            <div class="form-group" id="grupoIdUsuario" style="display:none">
-                <label>Usuario que edita *</label>
-                <input type="text" id="nombreUsuarioEdicion" placeholder="ej. admin01">
-                <span class="hint">Requerido para registrar el cambio en bitácora</span>
-            </div>
-
         </div>
         <br>
         <button class="btn btn-primary" id="btnGuardar" onclick="guardarPaciente()">Registrar Paciente</button>
@@ -213,19 +207,6 @@
 
 <script th:src="@{/js/api.js}"></script>
 <script>
-    const API = '';
-
-    function rolActual() {
-        return localStorage.getItem('sesionRol') || 'ADMIN';
-    }
-    function cambiarRol() {
-        localStorage.setItem('sesionRol', document.getElementById('selRol').value);
-    }
-    function headersConRol(conJson) {
-        const h = { 'X-Rol': rolActual() };
-        if (conJson) h['Content-Type'] = 'application/json';
-        return h;
-    }
     async function leerRespuesta(res) {
         const texto = await res.text();
         try { return JSON.parse(texto); } catch (e) { return texto; }
@@ -245,7 +226,7 @@
 
     async function cargarTiposDocumento() {
         try {
-            const res = await apiFetch(`${API}/api/catalogos/tipo-documento`);
+            const res = await apiFetch(`/api/catalogos/tipo-documento`);
             const data = await res.json();
             const select = document.getElementById('idTipoDoc');
             select.innerHTML = '<option value="">-- Seleccionar --</option>';
@@ -400,15 +381,10 @@
         try {
             let res, data;
             if (idEnEdicion) {
-                const nombreUsuario = document.getElementById('nombreUsuarioEdicion').value.trim();
-                if (!nombreUsuario) {
-                    msg.className = 'msg-err'; msg.style.display = 'block';
-                    msg.textContent = 'Ingresa el usuario que realiza la edición.';
-                    return;
-                }
-                res = await apiFetch(`${API}/api/pacientes/documento/${encodeURIComponent(idEnEdicion)}?nombreUsuario=${encodeURIComponent(nombreUsuario)}`, {
+                // El backend registra en la bitácora al usuario de la sesión
+                res = await apiFetch(`/api/pacientes/documento/${encodeURIComponent(idEnEdicion)}`, {
                     method: 'PUT',
-                    headers: headersConRol(true),
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(body)
                 });
                 data = await leerRespuesta(res);
@@ -422,9 +398,9 @@
                     msg.textContent = typeof data === 'string' ? data : 'Error al actualizar paciente.';
                 }
             } else {
-                res = await apiFetch(`${API}/api/pacientes`, {
+                res = await apiFetch(`/api/pacientes`, {
                     method: 'POST',
-                    headers: headersConRol(true),
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(body)
                 });
                 data = await leerRespuesta(res);
@@ -441,7 +417,7 @@
     }
 
     async function cargarParaEditar(numeroDocumento) {
-        const res = await apiFetch(`${API}/api/pacientes/documento/${encodeURIComponent(numeroDocumento)}`, { headers: headersConRol(false) });
+        const res = await apiFetch(`/api/pacientes/documento/${encodeURIComponent(numeroDocumento)}`);
         if (!res.ok) return alert('No se pudo cargar el paciente.');
         const p = await res.json();
         idEnEdicion = numeroDocumento;
@@ -465,7 +441,6 @@
         ['numDoc','fechaNac','sexo','tipoSangre','idTipoDoc'].forEach(id => document.getElementById(id).disabled = true);
 
         document.getElementById('grupoEstado').style.display = 'flex';
-        document.getElementById('grupoIdUsuario').style.display = 'flex';
         document.getElementById('btnGuardar').textContent = 'Actualizar Paciente';
         document.getElementById('btnCancelar').style.display = 'inline-block';
         document.querySelector('.card h2').textContent = `Editando Paciente: ${p.codigoPaciente}`;
@@ -476,11 +451,10 @@
     function cancelarEdicion() {
         idEnEdicion = null;
         ['idTipoDoc','numDoc','nombres','apPaterno','apMaterno','fechaNac','sexo','telefono',
-         'correo','direccion','ocupacion','tipoSangre','estadoCivil','nombreUsuarioEdicion']
+         'correo','direccion','ocupacion','tipoSangre','estadoCivil']
             .forEach(id => document.getElementById(id).value = '');
         ['numDoc','fechaNac','sexo','tipoSangre','idTipoDoc'].forEach(id => document.getElementById(id).disabled = false);
         document.getElementById('grupoEstado').style.display = 'none';
-        document.getElementById('grupoIdUsuario').style.display = 'none';
         document.getElementById('btnGuardar').textContent = 'Registrar Paciente';
         document.getElementById('btnCancelar').style.display = 'none';
         document.querySelector('.card h2').textContent = 'Registrar Paciente';
@@ -490,7 +464,7 @@
     async function eliminarPaciente(numeroDocumento) {
         if (!confirm('¿Seguro que deseas eliminar/desactivar este paciente?')) return;
         try {
-            const res = await apiFetch(`${API}/api/pacientes/documento/${encodeURIComponent(numeroDocumento)}`, { method: 'DELETE', headers: headersConRol(false) });
+            const res = await apiFetch(`/api/pacientes/documento/${encodeURIComponent(numeroDocumento)}`, { method: 'DELETE' });
             const texto = await res.text();
             const msg = document.getElementById('msg');
             if (res.ok) {
@@ -505,7 +479,7 @@
     }
 
     async function listarTodos() {
-        const res = await apiFetch(`${API}/api/pacientes`, { headers: headersConRol(false) });
+        const res = await apiFetch(`/api/pacientes`);
         if (!res.ok) return alert(await res.text());
         const data = await res.json();
         renderTabla(data);
@@ -517,19 +491,19 @@
 
         // Código de paciente: PAC-XXXX
         if (q.toUpperCase().startsWith('PAC-')) {
-            const res = await apiFetch(`${API}/api/pacientes/codigo/${encodeURIComponent(q)}`, { headers: headersConRol(false) });
+            const res = await apiFetch(`/api/pacientes/codigo/${encodeURIComponent(q)}`);
             if (res.status === 404) return renderTabla([]);
             if (!res.ok) return alert(await res.text());
             return renderTabla([await res.json()]);
         }
 
         // Se intenta por documento primero (DNI, CE, RUC, etc.)
-        let res = await apiFetch(`${API}/api/pacientes/documento/${encodeURIComponent(q)}`, { headers: headersConRol(false) });
+        let res = await apiFetch(`/api/pacientes/documento/${encodeURIComponent(q)}`);
         if (res.ok) return renderTabla([await res.json()]);
         if (res.status !== 404) return alert(await res.text());
 
         // Si no coincide con ningún documento, se busca por nombres/apellidos.
-        res = await apiFetch(`${API}/api/pacientes/buscar?nombres=${encodeURIComponent(q)}`, { headers: headersConRol(false) });
+        res = await apiFetch(`/api/pacientes/buscar?nombres=${encodeURIComponent(q)}`);
         if (!res.ok) return alert(await res.text());
         const data = await res.json();
         renderTabla(Array.isArray(data) ? data : [data]);
@@ -552,7 +526,7 @@
                 <td>
                     <button class="btn" style="padding:4px 10px;font-size:12px;background:#34a853;color:white" onclick="verHistorial('${p.numeroDocumento}', '${(p.nombres + ' ' + p.apellidoPaterno + ' ' + p.apellidoMaterno).replace(/'/g, "\\'")}')">Historial</button>
                     <button class="btn btn-primary" style="padding:4px 10px;font-size:12px" onclick="cargarParaEditar('${p.numeroDocumento}')">Editar</button>
-                    <button class="btn" style="padding:4px 10px;font-size:12px;background:#e53935;color:white" onclick="eliminarPaciente('${p.numeroDocumento}')">Eliminar</button>
+                    ${tienePermiso('paciente.eliminar') ? `<button class="btn" style="padding:4px 10px;font-size:12px;background:#e53935;color:white" onclick="eliminarPaciente('${p.numeroDocumento}')">Eliminar</button>` : ''}
                 </td>
             </tr>
         `).join('');
@@ -564,7 +538,7 @@
         tbody.innerHTML = '<tr><td colspan="2" style="text-align:center;color:#888">Cargando...</td></tr>';
         document.getElementById('modalHistorial').classList.add('abierto');
 
-        const res = await apiFetch(`${API}/api/atenciones/paciente/${encodeURIComponent(numeroDocumento)}`, { headers: headersConRol(false) });
+        const res = await apiFetch(`/api/atenciones/paciente/${encodeURIComponent(numeroDocumento)}`);
         if (!res.ok) {
             tbody.innerHTML = `<tr><td colspan="2" style="text-align:center;color:#c5221f">${await res.text()}</td></tr>`;
             return;

@@ -44,4 +44,30 @@
     }
 
     window.apiFetch = apiFetch;
+
+    // Usuario actual: lo deja la barra común (fragments/navbar.html) en data-usuario / data-rol
+    const nav = document.querySelector('nav.navbar[data-rol]');
+    window.USUARIO = Object.freeze({
+        nombreUsuario: nav ? nav.dataset.usuario : '',
+        rol: nav ? nav.dataset.rol : ''
+    });
+
+    // Único mapa acción -> roles del frontend; replica la matriz de SecurityConfig / @PreAuthorize.
+    // Solo decide qué se muestra: la validación real sigue en el backend (403)
+    const PERMISOS = {
+        'paciente.eliminar':        ['ADMINISTRADOR'],
+        'paciente.historiaClinica': ['ADMINISTRADOR', 'MEDICO'],          // alergias, antecedentes y bitácora
+        'seguro.escribir':          ['ADMINISTRADOR', 'RECEPCIONISTA'],
+        'contacto.escribir':        ['ADMINISTRADOR', 'RECEPCIONISTA'],
+        'catalogo.escribir':        ['ADMINISTRADOR']
+    };
+
+    window.tieneRol = (...roles) => roles.includes(window.USUARIO.rol);
+    window.tienePermiso = accion => (PERMISOS[accion] || []).includes(window.USUARIO.rol);
+
+    // GET /api/cuenta/me una sola vez por página (nombres, rol, permisos)
+    let cuenta = null;
+    window.obtenerCuenta = () => cuenta || (cuenta = apiFetch('/api/cuenta/me')
+        .then(res => res.ok ? res.json() : null)
+        .catch(() => null));
 })();

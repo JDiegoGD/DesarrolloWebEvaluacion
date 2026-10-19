@@ -1,22 +1,29 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security" lang="es">
 <body>
-<!-- Barra común: cada enlace se muestra según las reglas de URL de SecurityConfig (sec:authorize-url) -->
-<nav class="navbar" th:fragment="navbar">
+<!-- Barra común: cada enlace se muestra según las reglas de URL de SecurityConfig (sec:authorize-url).
+     activa: nombre de la vista actual (p. ej. 'pacientes') para resaltar su enlace.
+     data-usuario / data-rol: los lee api.js para window.USUARIO y tienePermiso() -->
+<nav class="navbar" th:fragment="navbar(activa)"
+     th:with="autenticado=${#authorization.expression('isAuthenticated()')},
+              rol=${autenticado} ? ${#strings.replace(#strings.listJoin(#authentication.authorities.?[authority.startsWith('ROLE_')].![authority], ', '), 'ROLE_', '')} : ''"
+     th:attr="data-usuario=${autenticado} ? ${#authentication.name} : '',data-rol=${rol}">
+    <style>.navbar a.activo{background:rgba(255,255,255,0.25);font-weight:bold}</style>
     <h1>Sistema Hospitalario</h1>
-    <a href="/">Inicio</a>
-    <a href="/pacientes" sec:authorize-url="/pacientes">Pacientes</a>
-    <a href="/atenciones" sec:authorize-url="/atenciones">Atenciones</a>
-    <a href="/seguros" sec:authorize-url="/seguros">Seguros</a>
-    <a href="/contactos" sec:authorize-url="/contactos">Contactos</a>
-    <a href="/usuarios" sec:authorize-url="/usuarios">Usuarios</a>
-    <a href="/bitacora" sec:authorize-url="/bitacora">Bitácora</a>
-    <a href="/auditoria" sec:authorize-url="/auditoria">Auditoría</a>
-    <span sec:authorize="isAuthenticated()" style="color:white;font-size:13px;display:flex;align-items:center;gap:10px">
+    <a href="/" th:classappend="${activa == 'inicio'} ? 'activo'" th:attr="aria-current=${activa == 'inicio'} ? 'page'">Inicio</a>
+    <a href="/pacientes" sec:authorize-url="/pacientes" th:classappend="${activa == 'pacientes'} ? 'activo'" th:attr="aria-current=${activa == 'pacientes'} ? 'page'">Pacientes</a>
+    <a href="/atenciones" sec:authorize-url="/atenciones" th:classappend="${activa == 'atenciones'} ? 'activo'" th:attr="aria-current=${activa == 'atenciones'} ? 'page'">Atenciones</a>
+    <a href="/seguros" sec:authorize-url="/seguros" th:classappend="${activa == 'seguros'} ? 'activo'" th:attr="aria-current=${activa == 'seguros'} ? 'page'">Seguros</a>
+    <a href="/contactos" sec:authorize-url="/contactos" th:classappend="${activa == 'contactos'} ? 'activo'" th:attr="aria-current=${activa == 'contactos'} ? 'page'">Contactos</a>
+    <a href="/bitacora" sec:authorize-url="/bitacora" th:classappend="${activa == 'bitacora'} ? 'activo'" th:attr="aria-current=${activa == 'bitacora'} ? 'page'">Bitácora</a>
+    <a href="/usuarios" sec:authorize-url="/usuarios" th:classappend="${activa == 'usuarios'} ? 'activo'" th:attr="aria-current=${activa == 'usuarios'} ? 'page'">Usuarios</a>
+    <!-- Roles: aún no existe la vista /roles; añadir aquí el enlace cuando se cree -->
+    <a href="/auditoria" sec:authorize-url="/auditoria" th:classappend="${activa == 'auditoria'} ? 'activo'" th:attr="aria-current=${activa == 'auditoria'} ? 'page'">Auditoría</a>
+    <span th:if="${autenticado}" style="color:white;font-size:13px;display:flex;align-items:center;gap:10px">
         <span>
             <strong sec:authentication="name">usuario</strong>
             <!-- Solo ROLE_*: Spring Security 7 también añade FACTOR_PASSWORD -->
-            (<span th:text="${#strings.replace(#strings.listJoin(#authentication.authorities.?[authority.startsWith('ROLE_')].![authority], ', '), 'ROLE_', '')}">ROL</span>)
+            (<span th:text="${rol}">ROL</span>)
         </span>
         <form th:action="@{/logout}" method="post" style="margin:0">
             <button type="submit" style="padding:6px 12px;border:none;border-radius:6px;cursor:pointer;font-size:13px;background:rgba(255,255,255,0.2);color:white">Cerrar sesión</button>

@@ -26,7 +26,7 @@
     </style>
 </head>
 <body>
-<nav th:replace="~{fragments/navbar :: navbar}"></nav>
+<nav th:replace="~{fragments/navbar :: navbar('bitacora')}"></nav>
 <div class="container">
 
     <div class="card">
@@ -59,20 +59,11 @@
 
 <script th:src="@{/js/api.js}"></script>
 <script>
-const API = '';
-
-function rolActual() {
-    return localStorage.getItem('sesionRol') || 'ADMIN';
-}
-function cambiarRol() {
-    localStorage.setItem('sesionRol', document.getElementById('selRol').value);
-}
-
 async function buscar() {
     const doc = document.getElementById('docPaciente').value.trim();
     if (!doc) return;
     const tbody = document.getElementById('bodyBitacora');
-    const res = await apiFetch(`${API}/api/pacientes/documento/${encodeURIComponent(doc)}/bitacora`, { headers: { 'X-Rol': rolActual() } });
+    const res = await apiFetch(`/api/pacientes/documento/${encodeURIComponent(doc)}/bitacora`);
     if (!res.ok) {
         tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:#c5221f">${await res.text()}</td></tr>`;
         return;

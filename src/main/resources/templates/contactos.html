@@ -32,7 +32,7 @@
     </style>
 </head>
 <body>
-<nav th:replace="~{fragments/navbar :: navbar}"></nav>
+<nav th:replace="~{fragments/navbar :: navbar('contactos')}"></nav>
 <div class="container">
 
     <div class="card">
@@ -95,8 +95,6 @@
 
 <script th:src="@{/js/api.js}"></script>
 <script>
-const API = '';
-
 async function registrarContacto() {
     const numDoc = document.getElementById('numDocPaciente').value.trim();
     const body = {
@@ -108,7 +106,7 @@ async function registrarContacto() {
         correoElectronico: document.getElementById('correo').value,
         esPrincipal: document.getElementById('esPrincipal').checked
     };
-    const res = await apiFetch(`${API}/api/contactos-emergencia`, {
+    const res = await apiFetch(`/api/contactos-emergencia`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body)
@@ -129,7 +127,7 @@ async function buscar() {
     const doc = document.getElementById('buscarDoc').value.trim();
     if (!doc) return;
     const tbody = document.getElementById('bodyContactos');
-    const res = await apiFetch(`${API}/api/contactos-emergencia/paciente/${encodeURIComponent(doc)}`);
+    const res = await apiFetch(`/api/contactos-emergencia/paciente/${encodeURIComponent(doc)}`);
     if (!res.ok) {
         tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:#c5221f">${await res.text()}</td></tr>`;
         return;

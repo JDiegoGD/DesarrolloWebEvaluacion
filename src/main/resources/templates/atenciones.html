@@ -33,7 +33,7 @@
     </style>
 </head>
 <body>
-<nav th:replace="~{fragments/navbar :: navbar}"></nav>
+<nav th:replace="~{fragments/navbar :: navbar('atenciones')}"></nav>
 <div class="container">
 
     <div class="card">
@@ -85,15 +85,13 @@
 
 <script th:src="@{/js/api.js}"></script>
 <script>
-const API = '';
-
 async function registrarAtencion() {
     const body = {
         paciente: { numeroDocumento: document.getElementById('numDocPaciente').value.trim() },
         fechaAtencion: document.getElementById('fechaAtencion').value,
         motivo: document.getElementById('motivo').value
     };
-    const res = await apiFetch(`${API}/api/atenciones`, {
+    const res = await apiFetch(`/api/atenciones`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body)
@@ -110,7 +108,7 @@ async function registrarAtencion() {
 }
 
 async function listarTodas() {
-    const res = await apiFetch(`${API}/api/atenciones`);
+    const res = await apiFetch(`/api/atenciones`);
     if (!res.ok) return alert(await res.text());
     const data = await res.json();
     renderTabla(data);
@@ -119,7 +117,7 @@ async function listarTodas() {
 async function buscarPorPaciente() {
     const doc = document.getElementById('buscarDocPaciente').value.trim();
     if (!doc) return;
-    const res = await apiFetch(`${API}/api/atenciones/paciente/${encodeURIComponent(doc)}`);
+    const res = await apiFetch(`/api/atenciones/paciente/${encodeURIComponent(doc)}`);
     if (!res.ok) return alert(await res.text());
     const data = await res.json();
     renderTabla(data);
