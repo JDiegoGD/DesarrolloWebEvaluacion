@@ -48,6 +48,13 @@
             <groupId>org.thymeleaf.extras</groupId>
             <artifactId>thymeleaf-extras-springsecurity6</artifactId>
         </dependency>
+        <!-- AOP para la auditoría. Se usa aspectjweaver directamente porque Maven no podía descargar
+             spring-boot-starter-aspectj (error TLS/PKIX en este equipo); es equivalente: el starter
+             solo agrupa spring-boot-starter + aspectjweaver, y la versión la gestiona Boot -->
+        <dependency>
+            <groupId>org.aspectj</groupId>
+            <artifactId>aspectjweaver</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.mariadb.jdbc</groupId>
             <artifactId>mariadb-java-client</artifactId>
